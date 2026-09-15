@@ -1,0 +1,1020 @@
+<title>MusiChat — Design System</title>
+
+<style>
+  /* ============================================================
+     PAGE CHROME — theme-aware (follows viewer's light/dark)
+     ============================================================ */
+  :root {
+    --pg-bg: #F9F7FD; --pg-surface: #FFFFFF; --pg-line: #E5E0F0;
+    --pg-text: #1A1733; --pg-text-2: #5F5980; --pg-text-3: #918BAC;
+    --pg-you: #D62F78; --pg-them: #2168E0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --pg-bg: #0C0A1A; --pg-surface: #141128; --pg-line: #2A2445;
+      --pg-text: #F2EFFB; --pg-text-2: #ADA5C8; --pg-text-3: #756D93;
+      --pg-you: #FF4F97; --pg-them: #3B8DFF;
+    }
+  }
+  :root[data-theme="light"] {
+    --pg-bg: #F9F7FD; --pg-surface: #FFFFFF; --pg-line: #E5E0F0;
+    --pg-text: #1A1733; --pg-text-2: #5F5980; --pg-text-3: #918BAC;
+    --pg-you: #D62F78; --pg-them: #2168E0;
+  }
+  :root[data-theme="dark"] {
+    --pg-bg: #0C0A1A; --pg-surface: #141128; --pg-line: #2A2445;
+    --pg-text: #F2EFFB; --pg-text-2: #ADA5C8; --pg-text-3: #756D93;
+    --pg-you: #FF4F97; --pg-them: #3B8DFF;
+  }
+
+  /* ============================================================
+     APP TOKENS — derived from the MusiChat mark
+     ============================================================ */
+  :root {
+    --ink-900: #0C0A1A;
+    --ink-800: #141128;
+    --ink-700: #1D1936;
+    --ink-600: #272247;
+    --ink-500: #352E5C;
+
+    --tx-hi:  #F2EFFB;
+    --tx-mid: #ADA5C8;
+    --tx-lo:  #756D93;
+
+    /* semantic by name — you cannot use these wrong */
+    --you-300: #FFB0D2;
+    --you-400: #FF83B6;
+    --you-500: #FF4F97;   /* Rose  — always the person holding the phone */
+    --you-600: #E02B78;
+
+    --them-300: #A9CCFF;
+    --them-400: #6FA8FF;
+    --them-500: #3B8DFF;  /* Azure — always the other person */
+    --them-600: #2168E0;
+
+    --coral-500: #FF8A45; /* gradient tail only, never standalone */
+
+    --together: linear-gradient(100deg, #3B8DFF 0%, #A24DEE 40%, #FF4F97 74%, #FF8A45 100%);
+
+    --online: #4FD6A4;
+    --warn:   #FFC24B;
+    --danger: #F94545;
+
+    --r-sm: 8px;  --r-md: 14px;  --r-lg: 20px;  --r-xl: 28px;  --r-full: 999px;
+    --dur-fast: 140ms; --dur-base: 220ms; --dur-slow: 380ms;
+    --ease: cubic-bezier(.22, 1, .36, 1);
+
+    --font-ui: "Figtree", system-ui, -apple-system, "Segoe UI Variable Text", "Segoe UI", Roboto, sans-serif;
+    --font-display: "Gabarito", "Outfit", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--pg-bg); color: var(--pg-text);
+    font-family: var(--font-ui); font-size: 16px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .14em;
+             text-transform: uppercase; color: var(--pg-text-3); margin: 0 0 10px; }
+  h1 { font-family: var(--font-display); font-weight: 700;
+       font-size: clamp(38px, 7vw, 64px); line-height: 1.04; letter-spacing: -.03em;
+       margin: 0 0 20px; text-wrap: balance; }
+  h2 { font-family: var(--font-display); font-weight: 700;
+       font-size: clamp(26px, 3.6vw, 34px); line-height: 1.14; letter-spacing: -.025em;
+       margin: 0 0 12px; text-wrap: balance; }
+  h3 { font-size: 15px; font-weight: 750; margin: 0 0 8px; }
+  .lede { font-size: 18px; line-height: 1.55; color: var(--pg-text-2); max-width: 62ch; margin: 0 0 8px; }
+  .note { font-size: 14.5px; color: var(--pg-text-2); max-width: 66ch; margin: 0; }
+  .note + .note { margin-top: 12px; }
+  strong { font-weight: 700; color: var(--pg-text); }
+
+  .band { padding: 72px 0; border-top: 1px solid var(--pg-line); }
+  .band-head { max-width: 66ch; margin-bottom: 40px; }
+
+  /* ---------------- HERO ---------------- */
+  .hero { position: relative; overflow: hidden; padding: 92px 0 76px; }
+  .hero-glow { position: absolute; inset: -40% -10% auto -10%; height: 460px; pointer-events: none; opacity: .46; }
+  .lamp { position: absolute; top: 40%; width: 420px; height: 420px; border-radius: 50%;
+          filter: blur(74px); transform: translate(-50%, -50%); }
+  .lamp-a { background: radial-gradient(circle, #FF4F97 0%, rgba(255,79,151,0) 68%); left: 34%; animation: driftA 11s var(--ease) infinite; }
+  .lamp-b { background: radial-gradient(circle, #3B8DFF 0%, rgba(59,141,255,0) 68%); left: 66%; animation: driftB 11s var(--ease) infinite; }
+  @keyframes driftA { 0%,100% { left: 22%; } 45%,60% { left: 47%; } }
+  @keyframes driftB { 0%,100% { left: 78%; } 45%,60% { left: 53%; } }
+  .hero-inner { position: relative; }
+  .hero h1 { max-width: 15ch; }
+  .hero .lede { font-size: 20px; }
+
+  .thesis { margin-top: 40px; display: flex; flex-direction: column; gap: 14px; max-width: 580px; }
+  .thesis-bar { height: 8px; border-radius: var(--r-full); background: var(--together); }
+  .thesis-legend { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--pg-text-2); gap: 12px; }
+  .thesis-legend b { font-weight: 750; }
+  .thesis-legend .l { color: var(--pg-them); }
+  .thesis-legend .r { color: var(--pg-you); }
+
+  /* ---------------- generic blocks ---------------- */
+  .rule-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(226px, 1fr)); gap: 14px; margin-top: 8px; }
+  .rule-card { border: 1px solid var(--pg-line); border-radius: var(--r-md); padding: 18px; background: var(--pg-surface); }
+  .rule-card .dot { width: 26px; height: 26px; border-radius: 50%; margin-bottom: 12px; }
+  .rule-card p { margin: 0; font-size: 13.5px; color: var(--pg-text-2); line-height: 1.5; }
+
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 12px; }
+  .sw { border-radius: var(--r-md); overflow: hidden; border: 1px solid var(--pg-line); background: var(--pg-surface); }
+  .sw-chip { height: 76px; }
+  .sw-meta { padding: 9px 11px 11px; }
+  .sw-name { font-size: 12.5px; font-weight: 750; }
+  .sw-hex { font-size: 11.5px; color: var(--pg-text-3); font-variant-numeric: tabular-nums; }
+  .sw-role { font-size: 11px; color: var(--pg-text-3); margin-top: 3px; }
+  .grad-strip { height: 92px; border-radius: var(--r-md); background: var(--together);
+                display: flex; align-items: flex-end; padding: 12px 14px; margin-bottom: 12px;
+                font-size: 12.5px; font-weight: 750; color: #FFF; text-shadow: 0 1px 6px rgba(0,0,0,.35); }
+
+  .facecards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 32px; }
+  .facecard { border: 1px solid var(--pg-line); border-radius: var(--r-md); padding: 20px; background: var(--pg-surface); }
+  .facecard .big { font-size: 38px; line-height: 1; margin-bottom: 14px; }
+  .facecard .big.dsp { font-family: var(--font-display); font-weight: 700; letter-spacing: -.03em; }
+
+  .type-rows { display: grid; gap: 2px; }
+  .type-row { display: grid; grid-template-columns: 112px 1fr; gap: 20px; align-items: baseline;
+              padding: 16px 0; border-bottom: 1px solid var(--pg-line); }
+  .type-key { font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--pg-text-3); }
+  .type-key span { display: block; text-transform: none; letter-spacing: 0; font-size: 11.5px; margin-top: 2px; }
+  .t-display-lg { font-family: var(--font-display); font-weight: 700; font-size: 34px; line-height: 1.08; letter-spacing: -.03em; }
+  .t-display { font-family: var(--font-display); font-weight: 700; font-size: 26px; line-height: 1.15; letter-spacing: -.025em; }
+  .t-title { font-size: 20px; font-weight: 750; line-height: 1.3; letter-spacing: -.01em; }
+  .t-body { font-size: 15px; font-weight: 400; line-height: 1.45; }
+  .t-label { font-size: 13px; font-weight: 550; line-height: 1.4; }
+  .t-caption { font-size: 11px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+
+  .tbl-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 460px; }
+  th, td { text-align: left; padding: 11px 14px 11px 0; border-bottom: 1px solid var(--pg-line); vertical-align: top; }
+  th { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--pg-text-3); font-weight: 700; }
+  td code, .code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+                   font-size: 12.5px; color: var(--pg-them); }
+  td:first-child { white-space: nowrap; }
+
+  /* ============================================================
+     PHONE FRAMES + APP COMPONENTS
+     ============================================================ */
+  .screens { display: grid; grid-template-columns: repeat(auto-fill, minmax(288px, 1fr)); gap: 34px 28px; }
+  .screen-cell { display: flex; flex-direction: column; gap: 12px; }
+  .screen-cap b { display: block; font-size: 14px; font-weight: 750; }
+  .screen-cap span { font-size: 13px; color: var(--pg-text-2); line-height: 1.45; }
+
+  .phone {
+    width: 100%; max-width: 300px; aspect-ratio: 300 / 620;
+    background: var(--ink-800); border-radius: 36px; padding: 7px; border: 1px solid #332B55;
+    box-shadow: 0 26px 50px -22px rgba(6, 3, 18, .7), 0 0 0 1px rgba(255,255,255,.03) inset;
+    position: relative; overflow: hidden; font-family: var(--font-ui); color: var(--tx-hi);
+  }
+  .a-screen { position: absolute; inset: 7px; border-radius: 30px; overflow: hidden;
+              background: var(--ink-800); display: flex; flex-direction: column; }
+  .a-screen.tint-warm { background: radial-gradient(120% 60% at 15% 0%, rgba(255,79,151,.13) 0%, rgba(20,17,40,0) 60%), var(--ink-800); }
+  .a-screen.tint-both { background: radial-gradient(90% 46% at 10% 0%, rgba(59,141,255,.17) 0%, rgba(20,17,40,0) 62%),
+                                     radial-gradient(90% 46% at 92% 6%, rgba(255,79,151,.17) 0%, rgba(20,17,40,0) 62%), var(--ink-800); }
+  .a-screen.a-light {
+    --ink-800: #F9F7FD; --ink-700: #FFFFFF; --ink-600: #F1EDFA; --ink-500: #E5E0F0;
+    --tx-hi: #1A1733; --tx-mid: #5F5980; --tx-lo: #918BAC;
+    --you-500: #D62F78; --them-500: #2168E0;
+    background: #F9F7FD; color: #1A1733;
+  }
+
+  .a-status { height: 26px; flex: 0 0 26px; display: flex; align-items: center; justify-content: space-between;
+              padding: 0 16px; font-size: 10.5px; font-weight: 700; color: var(--tx-mid); font-variant-numeric: tabular-nums; }
+  .a-status .dots { display: flex; gap: 3px; align-items: center; }
+  .a-status .dots i { width: 3px; height: 3px; border-radius: 50%; background: var(--tx-lo); display: block; }
+
+  .a-pad { padding: 0 16px; }
+  .a-appbar { display: flex; align-items: center; gap: 10px; padding: 6px 16px 12px; }
+  .a-appbar .grow { flex: 1; min-width: 0; }
+  .a-brand { font-family: var(--font-display); font-weight: 700; font-size: 21px; letter-spacing: -.03em; }
+  .a-brand i { font-style: normal; background: var(--together); -webkit-background-clip: text;
+               background-clip: text; color: transparent; }
+  .a-iconbtn { width: 30px; height: 30px; border-radius: var(--r-full); flex: 0 0 30px;
+               background: var(--ink-700); display: grid; place-items: center; font-size: 13px; color: var(--tx-mid); }
+
+  .a-av { border-radius: 50%; flex: none; position: relative; display: grid; place-items: center;
+          font-size: 13px; font-weight: 750; color: #FFF; }
+  .a-av.s40 { width: 40px; height: 40px; }
+  .a-av.s34 { width: 34px; height: 34px; font-size: 12px; }
+  .a-av.s28 { width: 28px; height: 28px; font-size: 11px; }
+  .a-av.s64 { width: 64px; height: 64px; font-size: 20px; }
+  .a-av.s76 { width: 76px; height: 76px; font-size: 24px; }
+  .av-p { background: linear-gradient(145deg, #FF83B6, #E02B78); }
+  .av-a { background: linear-gradient(145deg, #6FA8FF, #2168E0); }
+  .av-m { background: linear-gradient(145deg, #C07CF0, #8B3BE0); }
+  .av-d { background: linear-gradient(145deg, #FFB07A, #FF7A2F); }
+  .av-you { background: linear-gradient(145deg, #A24DEE, #FF4F97); }
+
+  .a-ring { position: relative; flex: none; display: grid; place-items: center; }
+  .a-ring::before { content: ""; position: absolute; inset: -4px; border-radius: 50%;
+    background: conic-gradient(from 0deg, #3B8DFF, #A24DEE, #FF4F97, #FF8A45, #A24DEE, #3B8DFF);
+    animation: spin 4.5s linear infinite; }
+  .a-ring::after { content: ""; position: absolute; inset: -1.5px; border-radius: 50%; background: var(--ink-800); }
+  .a-ring > * { position: relative; z-index: 1; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .a-presence { position: absolute; right: -1px; bottom: -1px; width: 11px; height: 11px;
+                border-radius: 50%; background: var(--online); border: 2.5px solid var(--ink-800); z-index: 2; }
+
+  .a-rows { display: flex; flex-direction: column; }
+  .a-row { display: flex; gap: 12px; align-items: center; padding: 10px 16px; }
+  .a-row .mid { flex: 1; min-width: 0; }
+  .a-row .nm { font-size: 14.5px; font-weight: 700; letter-spacing: -.01em; }
+  .a-row .pv { font-size: 12.5px; color: var(--tx-mid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .a-row .pv.vibe { background: var(--together); -webkit-background-clip: text; background-clip: text;
+                    color: transparent; font-weight: 700; }
+  .a-row .end { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex: none; }
+  .a-row .tm { font-size: 10.5px; color: var(--tx-lo); font-variant-numeric: tabular-nums; }
+  .a-badge { min-width: 18px; height: 18px; border-radius: var(--r-full); padding: 0 5px;
+             background: var(--you-500); color: #FFF; font-size: 10.5px; font-weight: 800;
+             display: grid; place-items: center; }
+
+  .a-thread { flex: 1; display: flex; flex-direction: column; gap: 7px; padding: 10px 14px; overflow: hidden; }
+  .a-b { max-width: 78%; padding: 9px 13px; font-size: 13.5px; line-height: 1.4; }
+  .a-b.them { align-self: flex-start; background: rgba(59,141,255,.17);
+              border: 1px solid rgba(59,141,255,.3); color: var(--tx-hi);
+              border-radius: var(--r-lg) var(--r-lg) var(--r-lg) 6px; }
+  .a-b.you { align-self: flex-end; background: linear-gradient(135deg, rgba(255,79,151,.32), rgba(162,77,238,.2));
+             border: 1px solid rgba(255,79,151,.36); color: var(--tx-hi);
+             border-radius: var(--r-lg) var(--r-lg) 6px var(--r-lg); }
+  .a-b .rcpt { font-size: 9.5px; color: var(--you-300); text-align: right; margin-top: 3px; opacity: .9; }
+  .a-sys { align-self: center; font-size: 11px; color: var(--tx-lo); text-align: center; padding: 3px 12px; max-width: 86%; }
+  .a-sys b { color: var(--tx-mid); font-weight: 700; }
+
+  .a-songcard { align-self: flex-start; max-width: 84%; display: flex; gap: 10px; align-items: center;
+                background: var(--ink-700); border: 1px solid var(--ink-500);
+                border-radius: var(--r-lg) var(--r-lg) var(--r-lg) 6px; padding: 9px; }
+  .a-art { border-radius: 10px; flex: none; position: relative; overflow: hidden;
+           background: linear-gradient(150deg, #2168E0 0%, #A24DEE 48%, #FF4F97 78%, #FF8A45 100%); }
+  .a-art.s44 { width: 44px; height: 44px; }
+  .a-art::after { content: ""; position: absolute; inset: 0;
+    background: radial-gradient(60% 50% at 24% 18%, rgba(255,255,255,.4), transparent 60%),
+                radial-gradient(45% 40% at 82% 84%, rgba(10,4,26,.5), transparent 62%); }
+  .a-songcard .sc-t { font-size: 13px; font-weight: 700; line-height: 1.25; }
+  .a-songcard .sc-a { font-size: 11.5px; color: var(--tx-mid); }
+  .a-songcard .sc-go { margin-left: auto; flex: none; font-size: 10.5px; font-weight: 800; padding: 6px 11px;
+                       border-radius: var(--r-full); background: var(--together); color: #FFF; white-space: nowrap; }
+
+  .a-composer { display: flex; gap: 8px; align-items: center; padding: 8px 14px 12px; }
+  .a-input { flex: 1; background: var(--ink-700); border: 1px solid var(--ink-500); border-radius: var(--r-full);
+             padding: 10px 14px; font-size: 13px; color: var(--tx-lo); display: flex; align-items: center; gap: 8px; }
+  .a-send { width: 36px; height: 36px; flex: none; border-radius: 50%; background: var(--together);
+            display: grid; place-items: center; color: #FFF; font-size: 14px; font-weight: 800; }
+
+  .a-chathead { display: flex; gap: 10px; align-items: center; padding: 4px 14px 11px; border-bottom: 1px solid var(--ink-600); }
+  .a-chathead .back { font-size: 17px; color: var(--tx-mid); flex: none; }
+  .a-chathead .nm { font-size: 14.5px; font-weight: 700; line-height: 1.2; }
+  .a-chathead .st { font-size: 11px; color: var(--online); }
+  .a-chathead .st.vibing { background: var(--together); -webkit-background-clip: text; background-clip: text;
+                           color: transparent; font-weight: 700; }
+
+  .a-mini { margin: 0 10px 10px; border-radius: 18px; background: rgba(39,34,71,.93);
+            border: 1px solid var(--ink-500); padding: 9px 11px; display: flex; gap: 10px; align-items: center;
+            position: relative; overflow: hidden; box-shadow: 0 10px 26px -12px rgba(0,0,0,.75); }
+  .a-mini::before { content: ""; position: absolute; left: 0; top: 0; height: 2px; width: 43%;
+                    background: var(--together); border-radius: 0 2px 2px 0; }
+  .a-mini .mi-t { font-size: 12.5px; font-weight: 700; line-height: 1.25; }
+  .a-mini .mi-w { font-size: 10px; font-weight: 800; letter-spacing: .05em;
+                  background: var(--together); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .a-mini .mi-mid { flex: 1; min-width: 0; }
+  .a-mini .mi-btn { width: 30px; height: 30px; flex: none; border-radius: 50%; background: var(--ink-600);
+                    display: grid; place-items: center; font-size: 11px; color: var(--tx-hi); }
+
+  .a-player { flex: 1; display: flex; flex-direction: column; padding: 4px 22px 18px; }
+  .a-eyebrow { font-size: 9.5px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase;
+               background: var(--together); -webkit-background-clip: text; background-clip: text; color: transparent;
+               text-align: center; margin-bottom: 14px; }
+  .a-eyebrow.solo { background: none; color: var(--tx-lo); }
+  .a-bigart { width: 100%; aspect-ratio: 1; border-radius: var(--r-xl); position: relative; overflow: hidden;
+              background: linear-gradient(155deg, #1E5FD8 0%, #7A3FE8 34%, #E8358F 68%, #FF9A4D 100%);
+              box-shadow: 0 22px 46px -20px rgba(255,79,151,.4), 0 22px 46px -20px rgba(59,141,255,.4); }
+  .a-bigart::after { content: ""; position: absolute; inset: 0;
+    background: radial-gradient(52% 46% at 26% 16%, rgba(255,255,255,.46), transparent 62%),
+                radial-gradient(56% 50% at 84% 88%, rgba(8,4,24,.62), transparent 64%),
+                radial-gradient(30% 26% at 68% 34%, rgba(255,255,255,.2), transparent 70%); }
+  .a-bigart.dim { filter: saturate(.48) brightness(.7); box-shadow: 0 22px 46px -22px rgba(255,79,151,.3); }
+
+  .a-track { text-align: center; margin-top: 20px; }
+  .a-track .tt { font-family: var(--font-display); font-weight: 700; font-size: 25px; line-height: 1.12; letter-spacing: -.03em; }
+  .a-track .ta { font-size: 13px; color: var(--tx-mid); margin-top: 3px; }
+
+  .a-prog { margin-top: 18px; }
+  .a-prog .bar { height: 3px; border-radius: 2px; background: var(--ink-600); position: relative; }
+  .a-prog .bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 43%; border-radius: 2px; background: var(--together); }
+  .a-prog .bar i::after { content: ""; position: absolute; right: -4px; top: 50%; transform: translateY(-50%);
+    width: 9px; height: 9px; border-radius: 50%; background: #FF6BA8; box-shadow: 0 0 0 3px rgba(255,79,151,.26); }
+  .a-prog .bar.solo i { background: var(--you-500); }
+  .a-prog .tms { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--tx-lo);
+                 margin-top: 7px; font-variant-numeric: tabular-nums; }
+
+  .a-ctrls { display: flex; align-items: center; justify-content: center; gap: 26px; margin-top: 18px; }
+  .a-ctrls .sk { font-size: 17px; color: var(--tx-mid); }
+  .a-play { width: 58px; height: 58px; border-radius: 50%; background: var(--together);
+            display: grid; place-items: center; color: #FFF; font-size: 19px;
+            box-shadow: 0 12px 28px -10px rgba(255,79,151,.6); }
+  .a-play.solo { background: var(--you-500); }
+
+  .a-pair { margin-top: auto; padding-top: 18px; display: flex; flex-direction: column; align-items: center; gap: 9px; }
+  .a-pair .duo { display: flex; align-items: center; }
+  .a-pair .thread { width: 44px; height: 2px; background: var(--together); margin: 0 -5px; position: relative; z-index: 0; }
+  .a-pair .thread.broken { background: repeating-linear-gradient(90deg, var(--tx-lo) 0 3px, transparent 3px 7px); }
+  .a-pair .duo .a-av { border: 2px solid var(--ink-800); z-index: 1; }
+  .a-pair .lbl { font-size: 12px; color: var(--tx-mid); }
+  .a-pair .lbl b { color: var(--tx-hi); font-weight: 700; }
+
+  .a-syncpill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: var(--r-full);
+                font-size: 10.5px; font-weight: 700; background: var(--ink-700); border: 1px solid var(--ink-500); color: var(--tx-mid); }
+  .a-syncpill i { width: 6px; height: 6px; border-radius: 50%; background: var(--online); display: block; }
+  .a-syncpill.warn { color: var(--warn); border-color: rgba(255,194,75,.32); }
+  .a-syncpill.warn i { background: var(--warn); animation: blink 1.1s ease-in-out infinite; }
+  @keyframes blink { 50% { opacity: .25; } }
+
+  .a-btn { display: block; text-align: center; border-radius: var(--r-full); padding: 13px 18px;
+           font-size: 14.5px; font-weight: 750; letter-spacing: -.01em; }
+  .a-btn.primary { background: var(--together); color: #FFF; box-shadow: 0 10px 24px -12px rgba(255,79,151,.7); }
+  .a-btn.ghost { background: transparent; border: 1px solid var(--ink-500); color: var(--tx-hi); }
+  .a-btn.quiet { background: var(--ink-700); color: var(--tx-hi); }
+  .a-skip { text-align: center; font-size: 13px; color: var(--tx-lo); padding: 12px; }
+
+  .a-field { margin-bottom: 12px; }
+  .a-field .fl { font-size: 11px; font-weight: 700; color: var(--tx-mid); margin-bottom: 6px; }
+  .a-ctl { background: var(--ink-700); border: 1px solid var(--ink-500); border-radius: var(--r-md);
+           padding: 12px 14px; font-size: 14px; color: var(--tx-hi); display: flex; align-items: center; gap: 6px; }
+  .a-ctl.focus { border-color: var(--you-500); box-shadow: 0 0 0 3px rgba(255,79,151,.18); }
+  .a-ctl .ph { color: var(--tx-lo); }
+  .a-ctl .eye { margin-left: auto; font-size: 12px; color: var(--tx-mid); }
+  .a-hint { font-size: 11.5px; margin-top: 6px; color: var(--online); font-weight: 700; }
+
+  .a-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .a-chip { font-size: 12px; padding: 7px 13px; border-radius: var(--r-full); border: 1px solid var(--ink-500); color: var(--tx-mid); }
+  .a-chip.on { background: rgba(255,79,151,.18); border-color: var(--you-500); color: var(--you-300); font-weight: 700; }
+
+  .a-seg { display: flex; background: var(--ink-700); border-radius: var(--r-full); padding: 3px; margin: 0 16px 14px; }
+  .a-seg div { flex: 1; text-align: center; font-size: 12px; font-weight: 700; padding: 7px 0; border-radius: var(--r-full); color: var(--tx-mid); }
+  .a-seg div.on { background: var(--ink-500); color: var(--tx-hi); }
+  .a-seg div .bd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; margin-left: 4px;
+                   border-radius: var(--r-full); background: var(--you-500); color: #FFF; font-size: 9.5px; }
+
+  .a-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+              text-align: center; padding: 0 30px; gap: 10px; }
+  .a-center .hd { font-family: var(--font-display); font-weight: 700; font-size: 25px; line-height: 1.14; letter-spacing: -.03em; }
+  .a-center .sb { font-size: 13px; color: var(--tx-mid); line-height: 1.5; }
+
+  /* the mark, rebuilt in CSS — two bubble-people, a note, a broken ring */
+  .a-mark { position: relative; width: 104px; height: 104px; margin-bottom: 6px; }
+  .a-mark .arc { position: absolute; inset: 0; border-radius: 50%; border: 5px solid transparent;
+                 background: var(--together) border-box; -webkit-mask:
+                 linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
+                 -webkit-mask-composite: xor; mask-composite: exclude;
+                 clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%); }
+  .a-mark .arc2 { position: absolute; inset: 0; border-radius: 50%; border: 5px solid #3B8DFF;
+                  clip-path: polygon(8% 74%, 92% 74%, 92% 100%, 8% 100%); opacity: .9; }
+  .a-mark .p { position: absolute; width: 26px; height: 26px; border-radius: 50% 50% 50% 8px; bottom: 26px; }
+  .a-mark .p.l { left: 14px; background: linear-gradient(150deg, #57C5FF, #2168E0); }
+  .a-mark .p.r { right: 14px; border-radius: 50% 50% 8px 50%; background: linear-gradient(210deg, #FF8A45, #C43BE0); }
+  .a-mark .h { position: absolute; width: 17px; height: 17px; border-radius: 50%; bottom: 52px; }
+  .a-mark .h.l { left: 18px; background: linear-gradient(150deg, #57C5FF, #2168E0); }
+  .a-mark .h.r { right: 18px; background: linear-gradient(210deg, #FF8A45, #C43BE0); }
+  .a-mark .note { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -46%);
+                  font-size: 30px; background: var(--together); -webkit-background-clip: text;
+                  background-clip: text; color: transparent; }
+
+  .a-qr { width: 108px; height: 108px; border-radius: var(--r-md); background: #F2EFFB; padding: 8px;
+          display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 1fr; gap: 2px; margin: 0 auto; }
+  .a-qr b { background: #141128; border-radius: 1px; display: block; }
+  .a-qr b.o { background: transparent; }
+
+  .a-linkbox { background: var(--ink-700); border: 1px dashed var(--ink-500); border-radius: var(--r-md);
+               padding: 11px 13px; font-size: 12px; color: var(--tx-mid); display: flex; gap: 8px; align-items: center; }
+  .a-linkbox .cp { margin-left: auto; color: var(--you-500); font-weight: 800; font-size: 11.5px; flex: none; }
+
+  .a-livepill { display: inline-flex; align-items: center; gap: 7px; padding: 6px 13px; border-radius: var(--r-full);
+                background: var(--ink-700); border: 1px solid var(--ink-500); font-size: 11.5px; color: var(--tx-mid); }
+  .a-livepill em { font-style: normal; color: var(--tx-hi); font-weight: 700; }
+  .a-livepill i { width: 6px; height: 6px; border-radius: 50%; background: var(--you-500); display: block;
+                  animation: breathe 2.4s ease-in-out infinite; }
+  @keyframes breathe { 50% { opacity: .3; transform: scale(.72); } }
+
+  .a-notice { margin: 0 16px 10px; border-radius: var(--r-sm); padding: 8px 11px; font-size: 11px; line-height: 1.4;
+              background: rgba(255,194,75,.13); border: 1px solid rgba(255,194,75,.28); color: #FFDD9E; }
+
+  .shelf { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
+  .shelf-item { background: var(--ink-800); border: 1px solid #332B55; border-radius: var(--r-lg);
+                padding: 18px; display: flex; flex-direction: column; gap: 12px;
+                font-family: var(--font-ui); color: var(--tx-hi); }
+  .shelf-label { font-size: 10px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; color: var(--tx-lo); }
+
+  footer { padding: 56px 0 72px; border-top: 1px solid var(--pg-line); color: var(--pg-text-3); font-size: 13.5px; }
+
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+  @media (max-width: 640px) { .band { padding: 52px 0; } .type-row { grid-template-columns: 1fr; gap: 6px; } }
+</style>
+
+<!-- ============================ HERO ============================ -->
+<header class="hero">
+  <div class="hero-glow" aria-hidden="true"><span class="lamp lamp-a"></span><span class="lamp lamp-b"></span></div>
+  <div class="wrap hero-inner">
+    <p class="eyebrow">MusiChat · Stage 3 · Design system v2</p>
+    <h1>The logo already told us what to build.</h1>
+    <p class="lede">
+      Two people drawn as speech bubbles — one cool, one warm — with music between them and a broken ring
+      holding them together. That mark is a diagram of the interface, so the whole system derives from it:
+      <strong>you are warm, they are cool, and a live session renders in the arc between you.</strong>
+    </p>
+    <div class="thesis">
+      <div class="thesis-bar"></div>
+      <div class="thesis-legend">
+        <span class="l"><b>Azure</b> — them</span>
+        <span><b>Vibing together</b></span>
+        <span class="r"><b>Rose</b> — you</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============================ THE MARK ============================ -->
+<section class="band">
+  <div class="wrap">
+    <div class="band-head">
+      <p class="eyebrow">The mark</p>
+      <h2>Reading the logo as a spec</h2>
+      <p class="note">
+        Four things in the mark became rules. The gradient arc is the product's most important colour;
+        the left/right split decides which person gets which hue; the break in the ring is why the solo
+        state uses a dotted thread; and the chat tail on the lower arc is why no bubble in the app needs one.
+      </p>
+    </div>
+    <div class="rule-cards">
+      <div class="rule-card">
+        <div class="dot" style="background: linear-gradient(140deg,#6FA8FF,#2168E0);"></div>
+        <h3>Azure is them</h3>
+        <p>The cool figure sits on the left of the mark — and their messages sit on the left of the thread. Cool light is what's far away.</p>
+      </div>
+      <div class="rule-card">
+        <div class="dot" style="background: linear-gradient(140deg,#FF83B6,#E02B78);"></div>
+        <h3>Rose is you</h3>
+        <p>The warm figure is on the right, where your own messages land. Your bubbles, your badges, your focus rings.</p>
+      </div>
+      <div class="rule-card">
+        <div class="dot" style="background: linear-gradient(100deg,#3B8DFF,#A24DEE,#FF4F97,#FF8A45);"></div>
+        <h3>The ring is togetherness</h3>
+        <p>The logo's own arc, reused as <code>--together</code>. Live sessions only — play buttons, progress, the vibing ring. Nothing decorative.</p>
+      </div>
+      <div class="rule-card">
+        <div class="dot" style="background:#4FD6A4;"></div>
+        <h3>Mint is presence</h3>
+        <p>Online status, nothing else. Deliberately outside the brand palette so "online" never reads as "vibing".</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ LOGO USAGE ============================ -->
+<section class="band">
+  <div class="wrap">
+    <div class="band-head">
+      <p class="eyebrow">Logo usage</p>
+      <h2>Three asset gaps to close</h2>
+      <p class="note">
+        The supplied files work on light backgrounds at large sizes. The product is dark and mostly small,
+        so three variants are missing before Stage 6 can ship a favicon.
+      </p>
+    </div>
+    <div class="tbl-scroll">
+      <table>
+        <tr><th>Gap</th><th>Why</th><th>Needed</th></tr>
+        <tr>
+          <td><strong>Dark-ground wordmark</strong></td>
+          <td>"Musi" is navy <code>#1A1A3E</code> and disappears on the app's <code>#141128</code> ground. Only "Chat" would be visible.</td>
+          <td>A knockout variant with "Musi" in <code>#F2EFFB</code>, keeping the gradient on "Chat".</td>
+        </tr>
+        <tr>
+          <td><strong>Simplified favicon</strong></td>
+          <td>At 16–32px the full mark — ring, two figures, note — collapses into mush. This is the single most common branding failure at small sizes.</td>
+          <td>A reduced mark: the note alone in the gradient, or two bubbles without the ring. Test at 16px before committing.</td>
+        </tr>
+        <tr>
+          <td><strong>Maskable PWA icon</strong></td>
+          <td>Android crops icons to circles, squircles and rounded squares. A transparent edge-to-edge mark gets clipped.</td>
+          <td>512×512 with the mark at 60% inside a solid <code>#141128</code> field, plus <code>purpose="maskable"</code> in the manifest.</td>
+        </tr>
+      </table>
+    </div>
+    <p class="note" style="margin-top:22px">
+      <strong>Sizes to export:</strong> <code>favicon.ico</code> (16/32/48), <code>apple-touch-icon.png</code> (180),
+      PWA <code>192</code> and <code>512</code>, maskable <code>512</code>, and a <code>1200×630</code> Open Graph
+      card. Minimum wordmark width is 96px; below that use the mark alone. Clear space on all sides equals
+      the height of the "M".
+    </p>
+  </div>
+</section>
+
+<!-- ============================ PALETTE ============================ -->
+<section class="band">
+  <div class="wrap">
+    <div class="band-head">
+      <p class="eyebrow">Colour</p>
+      <h2>Brand hues, tuned for night</h2>
+      <p class="note">
+        The logo runs at full saturation, which is right for a mark seen for two seconds and wrong for an
+        interface read for two hours. The UI keeps the brand's exact hue positions and pulls saturation down
+        a step. The ground is deep indigo rather than neutral black — it sits under both the blue and
+        magenta ends without fighting either.
+      </p>
+      <p class="note">
+        Tokens are named <code>--you-*</code> and <code>--them-*</code> rather than by colour. You cannot
+        accidentally use the wrong one.
+      </p>
+    </div>
+
+    <div class="grad-strip">--together &nbsp;·&nbsp; linear-gradient(100deg, #3B8DFF, #A24DEE, #FF4F97, #FF8A45)</div>
+
+    <div class="swatches">
+      <div class="sw"><div class="sw-chip" style="background:#0C0A1A"></div><div class="sw-meta"><div class="sw-name">Ink 900</div><div class="sw-hex">#0C0A1A</div><div class="sw-role">Deepest ground</div></div></div>
+      <div class="sw"><div class="sw-chip" style="background:#141128"></div><div class="sw-meta"><div class="sw-name">Ink 800</div><div class="sw-hex">#141128</div><div class="sw-role">App ground</div></div></div>
+      <div class="sw"><div class="sw-chip" style="background:#1D1936"></div><div class="sw-meta"><div class="sw-name">Ink 700</div><div class="sw-hex">#1D1936</div><div class="sw-role">Raised surface</div></div></div>
+      <div class="sw"><div class="sw-chip" style="background:#272247"></div><div class="sw-meta"><div class="sw-name">Ink 600</div><div class="sw-hex">#272247</div><div class="sw-role">Inputs, overlay</div></div></div>
+      <div class="sw"><div class="sw-chip" style="background:#352E5C"></div><div class="sw-meta"><div class="sw-name">Ink 500</div><div class="sw-hex">#352E5C</div><div class="sw-role">Borders</div></div></div>
+      <div class="sw"><div class="sw-chip" style="background:#F2EFFB"></div><div class="sw-meta"><div class="sw-name">Text high</div><div class="sw-hex">#F2EFFB</div><div class="sw-role">Primary text</div></div></div>
+      <div class="sw"><div class="sw-chip" style="background:#ADA5C8"></div><div class="sw-meta"><div class="sw-name">Text mid</div><div class="sw-hex">#ADA5C8</div><div class="sw-role">Secondary</div></div></div>
+      <div class="sw"><div class="sw-chip" style="background:#756D93"></div><div class="sw-meta"><div class="sw-name">Text low</div><div class="sw-hex">#756D93</div><div class="sw-role">Meta, timestamps</div></div></div>
+      <div class="sw"><div class="sw-chip" style="background:#FF83B6"></div><div class="sw-meta"><div class="sw-name">You 400</div><div class="sw-hex">#FF83B6</div><div class="sw-role">Rose, raised</div></div></div>
+      <div class="sw"><div class="sw-chip" style="background:#FF4F97"></div><div class="sw-meta"><div class="sw-name">You 500</div><div class="sw-hex">#FF4F97</div><div class="sw-role">You</div></div></div>
+      <div class="sw"><div class="sw-chip" style="background:#6FA8FF"></div><div class="sw-meta"><div class="sw-name">Them 400</div><div class="sw-hex">#6FA8FF</div><div class="sw-role">Azure, raised</div></div></div>
+      <div class="sw"><div class="sw-chip" style="background:#3B8DFF"></div><div class="sw-meta"><div class="sw-name">Them 500</div><div class="sw-hex">#3B8DFF</div><div class="sw-role">Them</div></div></div>
+      <div class="sw"><div class="sw-chip" style="background:#FF8A45"></div><div class="sw-meta"><div class="sw-name">Coral</div><div class="sw-hex">#FF8A45</div><div class="sw-role">Gradient tail only</div></div></div>
+      <div class="sw"><div class="sw-chip" style="background:#4FD6A4"></div><div class="sw-meta"><div class="sw-name">Mint</div><div class="sw-hex">#4FD6A4</div><div class="sw-role">Online only</div></div></div>
+      <div class="sw"><div class="sw-chip" style="background:#FFC24B"></div><div class="sw-meta"><div class="sw-name">Amber</div><div class="sw-hex">#FFC24B</div><div class="sw-role">Reconnecting</div></div></div>
+      <div class="sw"><div class="sw-chip" style="background:#F94545"></div><div class="sw-meta"><div class="sw-name">Red</div><div class="sw-hex">#F94545</div><div class="sw-role">Destructive</div></div></div>
+    </div>
+
+    <p class="note" style="margin-top:22px">
+      <strong>Accessibility.</strong> Rose and Azure differ in lightness as well as hue, so you/them survives
+      colour-blindness — but colour never carries meaning alone. Bubble alignment, avatars and labels repeat
+      every signal. Body text on Ink 800 measures 14.2:1. Coral is never used on its own: at
+      <code>#FF8A45</code> it fails contrast for text and exists purely as the gradient's warm terminus.
+    </p>
+  </div>
+</section>
+
+<!-- ============================ TYPE ============================ -->
+<section class="band">
+  <div class="wrap">
+    <div class="band-head">
+      <p class="eyebrow">Typography</p>
+      <h2>Answering to the wordmark</h2>
+      <p class="note">
+        The earlier draft paired a high-contrast serif with the interface. With the real wordmark in hand
+        that no longer holds — it's a heavy rounded geometric, and an editorial serif fights it.
+        <strong>Gabarito</strong> takes the display role instead: geometric, friendly, slightly unconventional,
+        and close enough in spirit to the logo to look related without imitating it.
+        <strong>Figtree</strong> keeps everything operational.
+      </p>
+      <p class="note">Both are free on Google Fonts. This preview page can't fetch webfonts and falls back to system faces.</p>
+    </div>
+
+    <div class="facecards">
+      <div class="facecard">
+        <div class="big dsp">Midnight Drive</div>
+        <h3>Gabarito — display</h3>
+        <p class="note" style="font-size:13.5px">Weights 600–700, tracking −0.03em. Track titles, headlines, empty states, the wordmark in-app. Never below 20px, never on a control label.</p>
+      </div>
+      <div class="facecard">
+        <div class="big">Vibing with Priya</div>
+        <h3>Figtree — interface</h3>
+        <p class="note" style="font-size:13.5px">Weights 400 / 550 / 700 / 800. Everything else. Tabular figures on all timecodes and counters.</p>
+      </div>
+    </div>
+
+    <div class="type-rows">
+      <div class="type-row"><div class="type-key">Display L<span>Gabarito 700 · 34/1.08</span></div><div class="t-display-lg">It's quiet in here</div></div>
+      <div class="type-row"><div class="type-key">Display<span>Gabarito 700 · 26/1.15</span></div><div class="t-display">Now vibing together</div></div>
+      <div class="type-row"><div class="type-key">Title<span>Figtree 750 · 20/1.3</span></div><div class="t-title">Find your people</div></div>
+      <div class="type-row"><div class="type-key">Body<span>Figtree 400 · 15/1.45</span></div><div class="t-body">Priya will join when she's around — start without her.</div></div>
+      <div class="type-row"><div class="type-key">Label<span>Figtree 550 · 13/1.4</span></div><div class="t-label">Show my vibing status to friends</div></div>
+      <div class="type-row"><div class="type-key">Caption<span>Figtree 700 · 11 · .13em</span></div><div class="t-caption">Now vibing together</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ FOUNDATIONS ============================ -->
+<section class="band">
+  <div class="wrap">
+    <div class="band-head"><p class="eyebrow">Foundations</p><h2>Spacing, shape, motion</h2></div>
+    <div class="tbl-scroll">
+      <table>
+        <tr><th>Token</th><th>Value</th><th>Applies to</th></tr>
+        <tr><td><code>--space</code></td><td>4 · 8 · 12 · 16 · 20 · 24 · 32 · 40</td><td>All gaps and padding. Screen gutter is 16.</td></tr>
+        <tr><td><code>--r-md</code></td><td>14px</td><td>Inputs, cards, artwork thumbnails</td></tr>
+        <tr><td><code>--r-lg</code></td><td>20px</td><td>Chat bubbles — one corner drops to 6px</td></tr>
+        <tr><td><code>--r-xl</code></td><td>28px</td><td>Player artwork, sheets</td></tr>
+        <tr><td><code>--r-full</code></td><td>999px</td><td>Buttons, avatars, pills, badges</td></tr>
+        <tr><td><code>--dur-fast</code></td><td>140ms</td><td>Taps, toggles, hovers</td></tr>
+        <tr><td><code>--dur-slow</code></td><td>380ms</td><td>Player sheet drag and settle</td></tr>
+        <tr><td><code>--ease</code></td><td>cubic-bezier(.22, 1, .36, 1)</td><td>Everything. One curve, no exceptions.</td></tr>
+        <tr><td><code>spin</code></td><td>4.5s linear infinite</td><td>Vibing ring only</td></tr>
+      </table>
+    </div>
+    <p class="note" style="margin-top:22px">
+      <strong>Motion is spent in three places:</strong> the vibing ring, which must look alive because it's what
+      prompts a session; the player sheet, the app's signature gesture; and the moment two people sync — the
+      emotional peak and the only earned celebration. Everything else moves once, at 140ms. All of it stops
+      under <code>prefers-reduced-motion</code>.
+    </p>
+  </div>
+</section>
+
+<!-- ============================ COMPONENTS ============================ -->
+<section class="band">
+  <div class="wrap">
+    <div class="band-head"><p class="eyebrow">Components</p><h2>The parts that carry meaning</h2></div>
+    <div class="shelf">
+      <div class="shelf-item">
+        <span class="shelf-label">Chat bubbles</span>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div class="a-b them">are you up?</div>
+          <div class="a-b you">barely 😴<div class="rcpt">Read</div></div>
+        </div>
+        <p class="note" style="font-size:13px;color:var(--tx-mid)">No tails — the logo's arc already carries one. One corner drops to 6px to point at the sender.</p>
+      </div>
+      <div class="shelf-item">
+        <span class="shelf-label">Vibing ring</span>
+        <div style="display:flex;gap:22px;align-items:center;padding:6px 0">
+          <div class="a-ring"><div class="a-av s40 av-p">P</div></div>
+          <div style="position:relative"><div class="a-av s40 av-a">A</div><span class="a-presence"></span></div>
+          <div class="a-av s40 av-m">M</div>
+        </div>
+        <p class="note" style="font-size:13px;color:var(--tx-mid)">Vibing, online, offline. The logo's ring, spinning. The only rotating element in the app.</p>
+      </div>
+      <div class="shelf-item">
+        <span class="shelf-label">Buttons</span>
+        <div class="a-btn primary">Start vibing</div>
+        <div class="a-btn ghost">Maybe later</div>
+        <p class="note" style="font-size:13px;color:var(--tx-mid)">Primary carries the ring gradient — the most important action is literally coloured like togetherness.</p>
+      </div>
+      <div class="shelf-item">
+        <span class="shelf-label">Sync status</span>
+        <div style="display:flex;gap:9px;flex-wrap:wrap">
+          <span class="a-syncpill"><i></i> In sync</span>
+          <span class="a-syncpill warn"><i></i> Reconnecting</span>
+        </div>
+        <div class="a-livepill"><i></i> Priya is vibing to <em>Midnight Drive</em></div>
+        <p class="note" style="font-size:13px;color:var(--tx-mid)">Never claims sync before it's true. One lie and users stop believing the indicator permanently.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ SCREENS ============================ -->
+<section class="band">
+  <div class="wrap">
+    <div class="band-head">
+      <p class="eyebrow">Screens</p>
+      <h2>Every screen in the MVP</h2>
+      <p class="note">Thirteen screens and states built from the tokens above. Copy is real, and so is the catalog — these are independent artists, because that's what the MVP actually ships.</p>
+    </div>
+
+    <div class="screens">
+
+      <!-- 1 WELCOME -->
+      <div class="screen-cell">
+        <div class="phone"><div class="a-screen tint-both">
+          <div class="a-status"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="a-center">
+            <div class="a-mark" aria-hidden="true">
+              <span class="arc"></span><span class="arc2"></span>
+              <span class="h l"></span><span class="p l"></span>
+              <span class="h r"></span><span class="p r"></span>
+              <span class="note">♫</span>
+            </div>
+            <div class="hd">Even when you're apart,<br>listen together.</div>
+            <div class="sb">Chat and play the same song at the same moment, with the one person you'd text at 2am.</div>
+          </div>
+          <div class="a-pad" style="padding-bottom:16px;display:flex;flex-direction:column;gap:9px">
+            <div class="a-btn primary">Create an account</div>
+            <div class="a-btn ghost">I already have one</div>
+          </div>
+        </div></div>
+        <div class="screen-cap"><b>Welcome</b><span>The mark does the explaining — two people, music between, a ring holding them together.</span></div>
+      </div>
+
+      <!-- 2 SIGN UP -->
+      <div class="screen-cell">
+        <div class="phone"><div class="a-screen tint-warm">
+          <div class="a-status"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="a-pad" style="padding-top:18px">
+            <div style="font-family:var(--font-display);font-weight:700;font-size:25px;letter-spacing:-.03em;margin-bottom:5px">Create an account</div>
+            <div style="font-size:13px;color:var(--tx-mid);margin-bottom:22px">Takes about thirty seconds.</div>
+            <div class="a-field"><div class="fl">Email</div><div class="a-ctl focus">arun@gmail.com</div></div>
+            <div class="a-field"><div class="fl">Password</div><div class="a-ctl"><span class="ph">At least 8 characters</span><span class="eye">Show</span></div></div>
+            <div class="a-btn primary" style="margin-top:6px">Continue</div>
+            <div style="display:flex;align-items:center;gap:10px;margin:18px 0"><span style="flex:1;height:1px;background:var(--ink-500)"></span><span style="font-size:11px;color:var(--tx-lo)">or</span><span style="flex:1;height:1px;background:var(--ink-500)"></span></div>
+            <div class="a-btn quiet">Continue with Google</div>
+          </div>
+        </div></div>
+        <div class="screen-cap"><b>Sign up</b><span>Password visibility toggle added from the checklist. Focus state carries Rose.</span></div>
+      </div>
+
+      <!-- 3 USERNAME -->
+      <div class="screen-cell">
+        <div class="phone"><div class="a-screen tint-warm">
+          <div class="a-status"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="a-pad" style="padding-top:18px">
+            <div style="font-family:var(--font-display);font-weight:700;font-size:25px;letter-spacing:-.03em;margin-bottom:5px">Pick your username</div>
+            <div style="font-size:13px;color:var(--tx-mid);line-height:1.5;margin-bottom:22px">This is how friends find you. It's the only thing we actually need.</div>
+            <div class="a-ctl focus"><span style="color:var(--tx-lo)">@</span>arunwrites</div>
+            <div class="a-hint">@arunwrites is available</div>
+            <div class="a-btn primary" style="margin-top:20px">Continue</div>
+          </div>
+        </div></div>
+        <div class="screen-cap"><b>Claim username</b><span>Alone on its own step — the one required field, and the one that can fail.</span></div>
+      </div>
+
+      <!-- 4 PROFILE -->
+      <div class="screen-cell">
+        <div class="phone"><div class="a-screen tint-warm">
+          <div class="a-status"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="a-pad" style="padding-top:14px;overflow:hidden">
+            <div style="font-family:var(--font-display);font-weight:700;font-size:23px;letter-spacing:-.03em;margin-bottom:3px">Tell Priya who you are</div>
+            <div style="font-size:12.5px;color:var(--tx-mid);margin-bottom:16px">All of this is optional.</div>
+            <div class="a-field"><div class="fl">Display name</div><div class="a-ctl">Arun</div></div>
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:14px">
+              <div class="a-av s64 av-you">A</div>
+              <div><div style="font-size:13px;font-weight:700">Add a photo</div><div style="font-size:11.5px;color:var(--tx-lo)">Helps people recognise you</div></div>
+            </div>
+            <div class="a-field"><div class="fl">Bio</div><div class="a-ctl"><span class="ph">150 characters</span></div></div>
+            <div class="fl" style="font-size:11px;font-weight:700;color:var(--tx-mid);margin-bottom:7px">What do you listen to?</div>
+            <div class="a-chips"><span class="a-chip on">Indie</span><span class="a-chip on">Lo-fi</span><span class="a-chip">Classical</span><span class="a-chip">Hip-hop</span><span class="a-chip">Jazz</span></div>
+          </div>
+          <div class="a-pad" style="padding-bottom:12px"><div class="a-btn primary">Done</div><div class="a-skip">Skip for now</div></div>
+        </div></div>
+        <div class="screen-cap"><b>Profile setup</b><span>Photo is never first — the highest-abandonment field in any onboarding.</span></div>
+      </div>
+
+      <!-- 5 INVITE -->
+      <div class="screen-cell">
+        <div class="phone"><div class="a-screen tint-both">
+          <div class="a-status"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="a-notice">You're in Instagram's browser. <b style="text-decoration:underline">Open in Chrome</b> so you stay signed in.</div>
+          <div class="a-center" style="gap:13px">
+            <div class="a-ring"><div class="a-av s76 av-p">P</div></div>
+            <div class="hd" style="font-size:24px">Priya wants to<br>vibe with you</div>
+            <div class="a-livepill"><i></i> Listening to <em>Midnight Drive</em> right now</div>
+            <div class="sb" style="margin-top:2px">Chat and hear the same song at the same moment, wherever you both are.</div>
+          </div>
+          <div class="a-pad" style="padding-bottom:16px">
+            <div class="a-btn primary">Join Priya</div>
+            <div class="a-skip">Already have an account? <b style="color:var(--you-500)">Log in</b></div>
+          </div>
+        </div></div>
+        <div class="screen-cap"><b>Invite landing</b><span>The highest-leverage screen in the app — and the one that must be server-rendered for WhatsApp previews.</span></div>
+      </div>
+
+      <!-- 6 HOME -->
+      <div class="screen-cell">
+        <div class="phone"><div class="a-screen">
+          <div class="a-status"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="a-appbar">
+            <div class="a-av s34 av-you">A</div>
+            <div class="grow"><div class="a-brand">Musi<i>Chat</i></div></div>
+            <div class="a-iconbtn">⌕</div><div class="a-iconbtn">＋</div>
+          </div>
+          <div class="a-rows">
+            <div class="a-row">
+              <div class="a-ring"><div class="a-av s40 av-p">P</div></div>
+              <div class="mid"><div class="nm">Priya</div><div class="pv vibe">Vibing · Midnight Drive</div></div>
+              <div class="end"><span class="tm">now</span></div>
+            </div>
+            <div class="a-row">
+              <div style="position:relative"><div class="a-av s40 av-a">A</div><span class="a-presence"></span></div>
+              <div class="mid"><div class="nm">Arun Menon</div><div class="pv">haha okay you win</div></div>
+              <div class="end"><span class="tm">2m</span><span class="a-badge">2</span></div>
+            </div>
+            <div class="a-row">
+              <div class="a-av s40 av-m">M</div>
+              <div class="mid"><div class="nm">Meera</div><div class="pv">↳ sent Paper Lanterns</div></div>
+              <div class="end"><span class="tm">1h</span></div>
+            </div>
+            <div class="a-row">
+              <div class="a-av s40 av-d">S</div>
+              <div class="mid"><div class="nm">Sana</div><div class="pv">call me when you're free</div></div>
+              <div class="end"><span class="tm">Tue</span></div>
+            </div>
+          </div>
+          <div style="margin-top:auto"><div class="a-mini">
+            <div class="a-art s44"></div>
+            <div class="mi-mid"><div class="mi-w">Vibing with Priya</div><div class="mi-t">Midnight Drive</div></div>
+            <div class="mi-btn">❚❚</div>
+          </div></div>
+        </div></div>
+        <div class="screen-cap"><b>Home</b><span>No tab bar — the mini player owns the bottom edge. Priya's spinning ring is the whole growth engine.</span></div>
+      </div>
+
+      <!-- 7 CONVERSATION -->
+      <div class="screen-cell">
+        <div class="phone"><div class="a-screen">
+          <div class="a-status"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="a-chathead">
+            <span class="back">‹</span>
+            <div class="a-ring"><div class="a-av s34 av-p">P</div></div>
+            <div style="flex:1"><div class="nm">Priya</div><div class="st vibing">Vibing with you</div></div>
+            <div class="a-iconbtn">⋯</div>
+          </div>
+          <div class="a-thread">
+            <div class="a-b them">are you up?</div>
+            <div class="a-b you">barely 😴</div>
+            <div class="a-b them">put this on, you'll like it</div>
+            <div class="a-songcard">
+              <div class="a-art s44"></div>
+              <div><div class="sc-t">Midnight Drive</div><div class="sc-a">Kavya Rao</div></div>
+              <div class="sc-go">Vibe</div>
+            </div>
+            <div class="a-sys"><b>Priya</b> started vibing · 11:04pm</div>
+            <div class="a-b you">okay this is really good<div class="rcpt">Read</div></div>
+            <div class="a-b them">told you</div>
+          </div>
+          <div class="a-mini">
+            <div class="a-art s44"></div>
+            <div class="mi-mid"><div class="mi-w">Vibing with Priya</div><div class="mi-t">Midnight Drive</div></div>
+            <div class="mi-btn">❚❚</div>
+          </div>
+          <div class="a-composer"><div class="a-input"><span>☺</span><span>Message</span></div><div class="a-send">↑</div></div>
+        </div></div>
+        <div class="screen-cap"><b>Conversation</b><span>Song cards stop this reading as a generic messenger. System lines stay quiet and factual.</span></div>
+      </div>
+
+      <!-- 8 PLAYER TOGETHER -->
+      <div class="screen-cell">
+        <div class="phone"><div class="a-screen tint-both">
+          <div class="a-status"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div style="display:flex;justify-content:center;padding:2px 0 8px"><span style="width:34px;height:4px;border-radius:2px;background:var(--ink-500)"></span></div>
+          <div class="a-player">
+            <div class="a-eyebrow">Now vibing together</div>
+            <div class="a-bigart"></div>
+            <div class="a-track"><div class="tt">Midnight Drive</div><div class="ta">Kavya Rao</div></div>
+            <div class="a-prog"><div class="bar"><i></i></div><div class="tms"><span>1:42</span><span>3:58</span></div></div>
+            <div class="a-ctrls"><span class="sk">⏮</span><div class="a-play">❚❚</div><span class="sk">⏭</span></div>
+            <div class="a-pair">
+              <div class="duo"><div class="a-av s28 av-a">P</div><span class="thread"></span><div class="a-av s28 av-you">A</div></div>
+              <div class="lbl"><b>You + Priya</b></div>
+              <span class="a-syncpill"><i></i> In sync</span>
+            </div>
+          </div>
+        </div></div>
+        <div class="screen-cap"><b>Full player — together</b><span>The hero screen. Two avatars joined by the logo's arc, rendered as a thread.</span></div>
+      </div>
+
+      <!-- 9 PLAYER SOLO -->
+      <div class="screen-cell">
+        <div class="phone"><div class="a-screen tint-warm">
+          <div class="a-status"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div style="display:flex;justify-content:center;padding:2px 0 8px"><span style="width:34px;height:4px;border-radius:2px;background:var(--ink-500)"></span></div>
+          <div class="a-player">
+            <div class="a-eyebrow solo">Listening alone</div>
+            <div class="a-bigart dim"></div>
+            <div class="a-track"><div class="tt">Paper Lanterns</div><div class="ta">Juno Fields</div></div>
+            <div class="a-prog"><div class="bar solo"><i></i></div><div class="tms"><span>0:51</span><span>4:12</span></div></div>
+            <div class="a-ctrls"><span class="sk">⏮</span><div class="a-play solo">❚❚</div><span class="sk">⏭</span></div>
+            <div class="a-pair">
+              <div class="duo"><div class="a-av s28 av-a" style="opacity:.32">P</div><span class="thread broken"></span><div class="a-av s28 av-you">A</div></div>
+              <div class="lbl">Priya will join when she's around</div>
+              <span class="a-btn ghost" style="padding:7px 16px;font-size:12px">Nudge her</span>
+            </div>
+          </div>
+        </div></div>
+        <div class="screen-cap"><b>Full player — solo</b><span>One hue, broken thread — exactly the gap in the logo's ring. A normal state, never an error.</span></div>
+      </div>
+
+      <!-- 10 RECONNECTING -->
+      <div class="screen-cell">
+        <div class="phone"><div class="a-screen tint-both">
+          <div class="a-status"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div style="display:flex;justify-content:center;padding:2px 0 8px"><span style="width:34px;height:4px;border-radius:2px;background:var(--ink-500)"></span></div>
+          <div class="a-player">
+            <div class="a-eyebrow solo" style="color:var(--warn)">Holding the song for her</div>
+            <div class="a-bigart" style="filter:saturate(.7) brightness(.84)"></div>
+            <div class="a-track"><div class="tt">Midnight Drive</div><div class="ta">Kavya Rao</div></div>
+            <div class="a-prog"><div class="bar"><i></i></div><div class="tms"><span>1:42</span><span>3:58</span></div></div>
+            <div class="a-ctrls"><span class="sk">⏮</span><div class="a-play">❚❚</div><span class="sk">⏭</span></div>
+            <div class="a-pair">
+              <div class="duo"><div class="a-av s28 av-a" style="opacity:.45">P</div><span class="thread broken"></span><div class="a-av s28 av-you">A</div></div>
+              <div class="lbl">Priya's connection dropped</div>
+              <span class="a-syncpill warn"><i></i> Reconnecting…</span>
+            </div>
+          </div>
+        </div></div>
+        <div class="screen-cap"><b>Reconnecting</b><span>Both people's connection state stays visible. Silence here is what destroys trust in the sync.</span></div>
+      </div>
+
+      <!-- 11 ADD FRIEND -->
+      <div class="screen-cell">
+        <div class="phone"><div class="a-screen tint-warm">
+          <div class="a-status"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="a-appbar"><span class="back" style="font-size:17px;color:var(--tx-mid)">‹</span><div class="grow" style="font-size:16px;font-weight:750">Add a friend</div></div>
+          <div class="a-seg"><div>Search</div><div class="on">Invite</div><div>Requests<span class="bd">1</span></div></div>
+          <div class="a-pad" style="text-align:center">
+            <div style="font-family:var(--font-display);font-weight:700;font-size:21px;letter-spacing:-.03em;margin-bottom:4px">Come vibe with me</div>
+            <div style="font-size:12.5px;color:var(--tx-mid);line-height:1.5;margin-bottom:16px">Send this to one person. They'll land straight in a chat with you.</div>
+            <div class="a-qr" aria-hidden="true">
+              <b></b><b></b><b></b><b class="o"></b><b></b><b></b><b></b>
+              <b></b><b class="o"></b><b></b><b></b><b class="o"></b><b class="o"></b><b></b>
+              <b></b><b></b><b class="o"></b><b></b><b></b><b></b><b class="o"></b>
+              <b class="o"></b><b></b><b></b><b class="o"></b><b></b><b class="o"></b><b></b>
+              <b></b><b class="o"></b><b></b><b></b><b class="o"></b><b></b><b></b>
+              <b></b><b></b><b class="o"></b><b class="o"></b><b></b><b class="o"></b><b></b>
+              <b></b><b class="o"></b><b></b><b></b><b></b><b></b><b class="o"></b>
+            </div>
+            <div class="a-linkbox" style="margin-top:16px;text-align:left">musichat.app/i/arunwrites<span class="cp">Copy</span></div>
+            <div class="a-btn primary" style="margin-top:10px">Share link</div>
+          </div>
+        </div></div>
+        <div class="screen-cap"><b>Add a friend</b><span>Search, Invite and Requests in one screen — after cutting nearby and contacts there wasn't enough for two.</span></div>
+      </div>
+
+      <!-- 12 EMPTY -->
+      <div class="screen-cell">
+        <div class="phone"><div class="a-screen tint-warm">
+          <div class="a-status"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="a-appbar">
+            <div class="a-av s34 av-you">A</div>
+            <div class="grow"><div class="a-brand">Musi<i>Chat</i></div></div>
+            <div class="a-iconbtn">⌕</div><div class="a-iconbtn">＋</div>
+          </div>
+          <div class="a-center">
+            <div class="a-mark" aria-hidden="true" style="opacity:.45">
+              <span class="arc"></span><span class="arc2"></span>
+              <span class="h l"></span><span class="p l"></span>
+              <span class="h r"></span><span class="p r"></span>
+              <span class="note">♫</span>
+            </div>
+            <div class="hd">It's quiet in here</div>
+            <div class="sb">This app needs two people. Invite the one you'd send a song to at midnight.</div>
+          </div>
+          <div class="a-pad" style="padding-bottom:16px;display:flex;flex-direction:column;gap:9px">
+            <div class="a-btn primary">Invite someone</div>
+            <div class="a-btn ghost">Search by username</div>
+          </div>
+        </div></div>
+        <div class="screen-cap"><b>Empty home</b><span>The most important empty state in the app. It explains the product and routes straight into inviting.</span></div>
+      </div>
+
+      <!-- 13 LIGHT -->
+      <div class="screen-cell">
+        <div class="phone" style="background:#F9F7FD;border-color:#E5E0F0"><div class="a-screen a-light">
+          <div class="a-status"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="a-chathead" style="border-color:#E5E0F0">
+            <span class="back">‹</span>
+            <div style="position:relative"><div class="a-av s34 av-p">P</div><span class="a-presence" style="border-color:#F9F7FD"></span></div>
+            <div style="flex:1"><div class="nm">Priya</div><div class="st" style="color:#1F9B72">Online</div></div>
+            <div class="a-iconbtn" style="background:#F1EDFA">⋯</div>
+          </div>
+          <div class="a-thread">
+            <div class="a-b them" style="background:rgba(33,104,224,.10);border-color:rgba(33,104,224,.28);color:#1A1733">morning!</div>
+            <div class="a-b you" style="background:linear-gradient(135deg,rgba(214,47,120,.16),rgba(162,77,238,.12));border-color:rgba(214,47,120,.34);color:#1A1733">morning — coffee first, then music<div class="rcpt" style="color:#B02A63">Read</div></div>
+            <div class="a-songcard" style="background:#FFF;border-color:#E5E0F0">
+              <div class="a-art s44"></div>
+              <div><div class="sc-t" style="color:#1A1733">Somewhere Warmer</div><div class="sc-a" style="color:#5F5980">Ilaa</div></div>
+              <div class="sc-go">Vibe</div>
+            </div>
+            <div class="a-b them" style="background:rgba(33,104,224,.10);border-color:rgba(33,104,224,.28);color:#1A1733">this one. trust me</div>
+          </div>
+          <div class="a-composer">
+            <div class="a-input" style="background:#FFF;border-color:#E5E0F0;color:#918BAC"><span>☺</span><span>Message</span></div>
+            <div class="a-send">↑</div>
+          </div>
+        </div></div>
+        <div class="screen-cap"><b>Light theme</b><span>Same tokens, redefined once. Rose and Azure darken to hold contrast on a light ground.</span></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================ GUARDRAILS ============================ -->
+<section class="band">
+  <div class="wrap">
+    <div class="band-head"><p class="eyebrow">Guardrails</p><h2>What this system refuses to do</h2></div>
+    <div class="tbl-scroll">
+      <table>
+        <tr><th>Rule</th><th>Because</th></tr>
+        <tr><td>The ring gradient is reserved for live shared sessions</td><td>If it decorates ordinary buttons it stops meaning "together" and the colour system collapses into styling.</td></tr>
+        <tr><td>Rose is never the other person</td><td>You are always warm, they are always cool, on every device. It has to be learnable in one session without a tutorial.</td></tr>
+        <tr><td>Coral never appears alone</td><td>It fails text contrast at <code>#FF8A45</code>. It exists only as the gradient's warm terminus, exactly as in the logo.</td></tr>
+        <tr><td>Mint is only ever "online"</td><td>Presence and vibing must never be confusable at a glance.</td></tr>
+        <tr><td>Gabarito never drops below 20px or labels a control</td><td>Display weight at small sizes reads as noise and hurts legibility on a phone.</td></tr>
+        <tr><td>Only one thing on screen may animate continuously</td><td>Ambient motion everywhere feels cheap and drains battery during long listening sessions.</td></tr>
+        <tr><td>Colour never carries meaning alone</td><td>Alignment, avatars and labels repeat every signal, so the app works for colour-blind users and in sunlight.</td></tr>
+        <tr><td>No bubble tails, envelope icons, or vinyl records</td><td>Borrowed signifiers would make this read as a WhatsApp and Spotify clone — and the mark already carries a tail.</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    MusiChat · Stage 3 · Design system v2, reconciled with the brand · 15 September 2026<br>
+    Next: Stage 4 — technical architecture, database schema, and the real-time sync design.
+  </div>
+</footer>
