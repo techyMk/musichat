@@ -23,6 +23,10 @@ export function ProfileForm({
   bio,
   genres,
   avatarUrl,
+  /** Where to land after saving. Onboarding goes to /chats, editing to /me. */
+  next = "/chats",
+  submitLabel = "Done",
+  showSkip = true,
 }: {
   userId: string;
   username: string;
@@ -30,6 +34,9 @@ export function ProfileForm({
   bio: string;
   genres: string[];
   avatarUrl: string | null;
+  next?: string;
+  submitLabel?: string;
+  showSkip?: boolean;
 }) {
   const [state, action, pending] = useActionState<FormState, FormData>(
     saveProfile,
@@ -51,6 +58,7 @@ export function ProfileForm({
 
   return (
     <form action={action} className="flex flex-col gap-5">
+      <input type="hidden" name="next" value={next} />
       <AvatarUpload
         userId={userId}
         name={name || username}
@@ -101,15 +109,17 @@ export function ProfileForm({
 
       <div className="flex flex-col gap-1">
         <Button type="submit" full disabled={pending}>
-          {pending ? "Saving…" : "Done"}
+          {pending ? "Saving…" : submitLabel}
         </Button>
         {/* Never styled as a button — skipping has to feel free. */}
-        <Link
-          href="/chats"
-          className="py-3 text-center text-[13px] text-tx-lo hover:text-tx-mid"
-        >
-          Skip for now
-        </Link>
+        {showSkip && (
+          <Link
+            href="/chats"
+            className="py-3 text-center text-[13px] text-tx-lo hover:text-tx-mid"
+          >
+            Skip for now
+          </Link>
+        )}
       </div>
     </form>
   );

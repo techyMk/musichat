@@ -15,28 +15,34 @@ export function AuthShell({
   return (
     <main
       id="main"
-      className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-6 py-14"
+      className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-10 sm:py-14"
     >
-      <Link
-        href="/"
-        className="font-display mb-10 text-[21px] font-bold tracking-tight text-tx-hi"
-      >
-        Musi
-        <span className="bg-[image:var(--together)] bg-clip-text text-transparent">
-          Chat
-        </span>
-      </Link>
+      {/* A raised card once there is room, so the form reads as a deliberate
+          panel rather than a narrow strip stranded on a wide screen. */}
+      <div className="sm:rounded-[var(--r-xl)] sm:border sm:border-ink-600 sm:bg-ink-800/70 sm:p-8 sm:shadow-[0_32px_64px_-40px_rgba(0,0,0,0.9)] sm:backdrop-blur-xl">
+        <Link
+          href="/"
+          className="font-display mb-9 inline-block text-[21px] font-bold tracking-tight text-tx-hi"
+        >
+          Musi
+          <span className="bg-[image:var(--together)] bg-clip-text text-transparent">
+            Chat
+          </span>
+        </Link>
 
-      <h1 className="font-display mb-1.5 text-[25px] leading-tight font-bold tracking-tight text-tx-hi">
-        {title}
-      </h1>
-      {subtitle && (
-        <p className="mb-7 text-[13px] leading-relaxed text-tx-mid">{subtitle}</p>
-      )}
+        <h1 className="font-display mb-1.5 text-[25px] leading-tight font-bold tracking-tight text-tx-hi">
+          {title}
+        </h1>
+        {subtitle && (
+          <p className="mb-7 text-[13px] leading-relaxed text-tx-mid">
+            {subtitle}
+          </p>
+        )}
 
-      {children}
+        {children}
 
-      {footer && <div className="mt-7">{footer}</div>}
+        {footer && <div className="mt-7">{footer}</div>}
+      </div>
     </main>
   );
 }

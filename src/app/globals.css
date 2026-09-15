@@ -2,11 +2,16 @@
 
 /* ============================================================
    MusiChat design tokens — DESIGN.md §2
-   Dark is the default. Light follows the system, and an explicit
-   data-theme on <html> overrides both.
+
+   Single-theme by choice, not omission. The concept is two lights
+   in the dark: glowing accents need a dark ground to glow against,
+   and the product's register is night-time. A light inversion
+   stripped all of that and read as a generic app.
    ============================================================ */
 
 :root {
+  color-scheme: dark;
+
   --ink-900: #0c0a1a;
   --ink-800: #141128;
   --ink-700: #1d1936;
@@ -56,60 +61,6 @@
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    --ink-900: #f1edfa;
-    --ink-800: #f9f7fd;
-    --ink-700: #ffffff;
-    --ink-600: #f1edfa;
-    --ink-500: #e5e0f0;
-
-    --tx-hi: #1a1733;
-    --tx-mid: #5f5980;
-    --tx-lo: #918bac;
-
-    --you-500: #d62f78;
-    --you-600: #b02a63;
-    --them-500: #2168e0;
-    --them-600: #1a52b4;
-    --online: #1f9b72;
-
-    --together: linear-gradient(
-      100deg,
-      #2168e0 0%,
-      #8b3be0 40%,
-      #d62f78 74%,
-      #e8752f 100%
-    );
-  }
-}
-
-:root[data-theme="light"] {
-  --ink-900: #f1edfa;
-  --ink-800: #f9f7fd;
-  --ink-700: #ffffff;
-  --ink-600: #f1edfa;
-  --ink-500: #e5e0f0;
-
-  --tx-hi: #1a1733;
-  --tx-mid: #5f5980;
-  --tx-lo: #918bac;
-
-  --you-500: #d62f78;
-  --you-600: #b02a63;
-  --them-500: #2168e0;
-  --them-600: #1a52b4;
-  --online: #1f9b72;
-
-  --together: linear-gradient(
-    100deg,
-    #2168e0 0%,
-    #8b3be0 40%,
-    #d62f78 74%,
-    #e8752f 100%
-  );
-}
-
 @theme inline {
   --color-ink-900: var(--ink-900);
   --color-ink-800: var(--ink-800);
@@ -141,9 +92,64 @@
   --ease-brand: var(--ease);
 }
 
+html,
 body {
-  background: var(--ink-800);
+  background: var(--ink-900);
   color: var(--tx-hi);
+}
+
+/* Ambient depth. Two lights sitting behind everything, fixed so they do not
+   scroll — this is what stops the app reading as a flat sheet of colour. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      58% 42% at 10% -4%,
+      rgba(59, 141, 255, 0.17),
+      transparent 62%
+    ),
+    radial-gradient(
+      54% 40% at 92% 4%,
+      rgba(255, 79, 151, 0.15),
+      transparent 62%
+    ),
+    radial-gradient(
+      80% 50% at 50% 108%,
+      rgba(162, 77, 238, 0.12),
+      transparent 60%
+    );
+}
+
+/* Default scrollbars are visually loud against a dark ground. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink-500) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ink-500);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: var(--r-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-600);
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+::selection {
+  background: rgba(255, 79, 151, 0.28);
 }
 
 /* Accessibility floor — every interactive element gets a visible focus ring. */

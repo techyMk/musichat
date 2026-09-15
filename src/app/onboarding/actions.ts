@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createClient, getUser } from "@/lib/supabase/server";
 import type { FormState } from "@/app/auth/actions";
 import {
@@ -18,6 +19,7 @@ export async function claimUsername(
   const username = String(formData.get("username") ?? "")
     .trim()
     .toLowerCase();
+  const invite = String(formData.get("invite") ?? "").trim();
 
   if (!USERNAME_PATTERN.test(username)) {
     return {
@@ -44,6 +46,16 @@ export async function claimUsername(
     return { error: "Couldn't save that username. Try again in a moment." };
   }
 
+  // Invited users skip profile setup entirely and land in the conversation
+  // (UX.md §6.2). They came for one specific person — asking them to write a
+  // bio first is friction at exactly the wrong moment.
+  if (invite) {
+    const { data: friendshipId } = await supabase.rpc("redeem_invite", {
+      invite_code: invite,
+    });
+    if (friendshipId) redirect(`/chats/${friendshipId}`);
+  }
+
   redirect("/onboarding/profile");
 }
 
@@ -56,6 +68,8 @@ export async function saveProfile(
 
   const displayName = String(formData.get("display_name") ?? "").trim();
   const bio = String(formData.get("bio") ?? "").trim();
+  // Onboarding finishes at the chats list; editing later returns to /me.
+  const next = formData.get("next") === "/me" ? "/me" : "/chats";
   const genres = formData
     .getAll("genres")
     .map(String)
@@ -83,5 +97,6 @@ export async function saveProfile(
     return { error: "Couldn't save your profile. Try again in a moment." };
   }
 
-  redirect("/chats");
+  revalidatePath(next);
+  redirect(next);
 }

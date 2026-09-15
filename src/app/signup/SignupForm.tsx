@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { FormError } from "@/components/AuthShell";
 
-export function SignupForm() {
+export function SignupForm({ invite }: { invite?: string }) {
   const [state, action, pending] = useActionState<FormState, FormData>(
     signUp,
     {},
@@ -14,6 +14,7 @@ export function SignupForm() {
 
   return (
     <form action={action} className="flex flex-col gap-3.5">
+      {invite && <input type="hidden" name="invite" value={invite} />}
       <Field
         label="Email"
         name="email"

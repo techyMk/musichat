@@ -7,6 +7,7 @@ import { getFriendships, displayNameOf } from "@/lib/friends";
 import { absoluteUrl } from "@/lib/site";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
+import { PageHeader } from "@/components/PageHeader";
 import { cn } from "@/lib/cn";
 import { SearchPanel } from "./SearchPanel";
 import { InviteActions } from "./InviteActions";
@@ -43,14 +44,10 @@ export default async function AddFriendPage({
   const outgoing = friendships.filter((f) => f.status === "pending" && !f.incoming);
 
   return (
-    <main id="main" className="mx-auto w-full max-w-sm flex-1 px-5 pt-5 pb-10">
-      <header className="mb-5 flex items-center gap-2.5">
-        <Link href="/chats" className="text-[18px] text-tx-mid hover:text-tx-hi">
-          ‹<span className="sr-only">Back to chats</span>
-        </Link>
-        <h1 className="text-[16px] font-bold text-tx-hi">Add a friend</h1>
-      </header>
+    <div id="main" className="flex min-h-0 flex-1 flex-col">
+      <PageHeader title="Add a friend" />
 
+      <div className="mx-auto w-full max-w-md flex-1 overflow-y-auto px-5 py-6">
       <nav className="mb-6 flex rounded-full bg-ink-700 p-1">
         {TABS.map((t) => (
           <Link
@@ -71,12 +68,17 @@ export default async function AddFriendPage({
         ))}
       </nav>
 
-      {tab === "invite" && <InviteTab />}
-      {tab === "search" && <SearchPanel />}
-      {tab === "requests" && (
-        <RequestsTab incoming={incoming} outgoing={outgoing} justSent={!!params.sent} />
-      )}
-    </main>
+        {tab === "invite" && <InviteTab />}
+        {tab === "search" && <SearchPanel />}
+        {tab === "requests" && (
+          <RequestsTab
+            incoming={incoming}
+            outgoing={outgoing}
+            justSent={!!params.sent}
+          />
+        )}
+      </div>
+    </div>
   );
 }
 
