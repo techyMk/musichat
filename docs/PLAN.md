@@ -101,8 +101,16 @@ Two smaller findings carried into M5:
   different sessions entirely. **Sequence equality is the real convergence check**, and the production
   sync status must verify it before ever displaying "In sync".
 
-Still outstanding: the two-network test (phone on mobile data) and the tunnel recovery test, both of
-which need the Vercel deploy in 0.2.
+Confirmed working again on the Vercel deploy.
+
+**Decision: the spike page stays until M5 ships the real player.** The rule was to delete it, and the
+reason was that throwaway code becomes load-bearing. But `clock.ts` and `sync.ts` turned out to be
+production code rather than spike code, and `/spike` is the only sync test harness that exists until the
+real player is built. It is deleted at the end of M5, not before.
+
+Still worth doing when convenient: the tunnel recovery test — data off for a full minute, then back on,
+confirming the client rejoins at the *live* position rather than where it left. It is also an M5
+acceptance criterion (5.10), so it gets covered there regardless.
 
 ---
 
