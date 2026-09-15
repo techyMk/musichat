@@ -1,48 +1,67 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   toMessage,
   shouldGroup,
   formatTime,
   formatDayLabel,
+  receiptFor,
   type Message,
+  type Watermark,
+  type ReceiptState,
 } from "@/lib/messages";
 import { usePlayer } from "@/components/player/PlayerProvider";
 import { Artwork } from "@/components/player/Artwork";
 import { PlayPauseIcon } from "@/components/player/controls";
-import { Composer } from "./Composer";
+import { MessageActions } from "./MessageActions";
+import { Composer, type ReplyTarget } from "./Composer";
 import { cn } from "@/lib/cn";
 import type { Track } from "@/lib/music/types";
 
-/**
- * The conversation.
- *
- * DESIGN.md §5.1: no tails, and the corner nearest the sender drops to 6px.
- * You are Rose and they are Azure, on every device — the rule holds because
- * "you" is always whoever is holding the phone.
- */
 export function MessageThread({
   friendshipId,
   meId,
   partnerName,
   initialMessages,
+  initialWatermark,
 }: {
   friendshipId: string;
   meId: string;
   partnerName: string;
   initialMessages: Message[];
+  initialWatermark: Watermark | null;
 }) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [partner, setPartner] = useState<Watermark | null>(initialWatermark);
+  const [replyTo, setReplyTo] = useState<ReplyTarget | null>(null);
+  const [editing, setEditing] = useState<Message | null>(null);
   const [client] = useState(() => createClient());
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  const byId = useMemo(
+    () => new Map(messages.map((m) => [m.id, m])),
+    [messages],
+  );
+
+  /** Moves our own watermark forward. Read only when the tab is actually visible. */
+  const mark = useCallback(
+    (read: boolean) => {
+      void client.rpc("mark_conversation", {
+        target_friendship: friendshipId,
+        delivered: true,
+        read,
+      });
+    },
+    [client, friendshipId],
+  );
 
   /* ---------------- realtime ---------------- */
 
   useEffect(() => {
     const channel = client
-      .channel(`messages:${friendshipId}`)
+      .channel(`thread:${friendshipId}`)
       .on(
         "postgres_changes",
         {
@@ -53,12 +72,13 @@ export function MessageThread({
         },
         (payload) => {
           const incoming = toMessage(payload.new as never);
-          setMessages((current) => {
-            // Our own message already rendered optimistically; the insert
-            // event is the confirmation, not a second message.
-            if (current.some((m) => m.id === incoming.id)) return current;
-            return [...current, incoming];
-          });
+          setMessages((current) =>
+            current.some((m) => m.id === incoming.id)
+              ? current
+              : [...current, incoming],
+          );
+          // Their message reached our device; mark read too if we are looking.
+          mark(document.visibilityState === "visible");
         },
       )
       .on(
@@ -76,29 +96,81 @@ export function MessageThread({
           );
         },
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "friendship_reads",
+          filter: `friendship_id=eq.${friendshipId}`,
+        },
+        (payload) => {
+          const row = payload.new as {
+            user_id: string;
+            last_delivered_at: string;
+            last_read_at: string;
+          };
+          if (!row?.user_id || row.user_id === meId) return;
+          setPartner({
+            userId: row.user_id,
+            lastDeliveredAt: row.last_delivered_at,
+            lastReadAt: row.last_read_at,
+          });
+        },
+      )
       .subscribe();
 
     return () => {
       void client.removeChannel(channel);
     };
-  }, [client, friendshipId]);
+  }, [client, friendshipId, meId, mark]);
 
-  /* ---------------- keep the newest message in view ---------------- */
+  /* ---------------- read state ---------------- */
+
+  useEffect(() => {
+    mark(document.visibilityState === "visible");
+
+    // Coming back to the tab is what turns delivered into read.
+    const onVisible = () => {
+      if (document.visibilityState === "visible") mark(true);
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [mark]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ block: "end" });
   }, [messages.length]);
 
-  const onSent = (optimistic: Message) =>
-    setMessages((current) => [...current, optimistic]);
+  /* ---------------- actions ---------------- */
 
-  const onConfirmed = (tempId: string, saved: Message) =>
-    setMessages((current) =>
-      current.map((m) => (m.id === tempId ? saved : m)),
+  const remove = async (message: Message) => {
+    // A tombstone, so the other side sees something was removed rather than
+    // history quietly changing (FR-C9).
+    setMessages((cur) =>
+      cur.map((m) =>
+        m.id === message.id
+          ? { ...m, deletedAt: new Date().toISOString(), body: null }
+          : m,
+      ),
     );
+    await client
+      .from("messages")
+      .update({ deleted_at: new Date().toISOString(), body: null })
+      .eq("id", message.id);
+  };
 
-  const onFailed = (tempId: string) =>
-    setMessages((current) => current.filter((m) => m.id !== tempId));
+  const applyEdit = async (message: Message, body: string) => {
+    const editedAt = new Date().toISOString();
+    setMessages((cur) =>
+      cur.map((m) => (m.id === message.id ? { ...m, body, editedAt } : m)),
+    );
+    setEditing(null);
+    await client
+      .from("messages")
+      .update({ body, edited_at: editedAt })
+      .eq("id", message.id);
+  };
 
   return (
     <>
@@ -106,10 +178,10 @@ export function MessageThread({
         {messages.length === 0 ? (
           <EmptyThread partnerName={partnerName} />
         ) : (
-          <ol className="flex flex-col gap-1.5">
+          <ol className="flex flex-col">
             {messages.map((message, i) => {
               const previous = messages[i - 1];
-              const grouped = shouldGroup(previous, message);
+              const mine = message.senderId === meId;
               const newDay =
                 !previous ||
                 formatDayLabel(previous.createdAt) !==
@@ -124,8 +196,24 @@ export function MessageThread({
                   )}
                   <MessageRow
                     message={message}
-                    mine={message.senderId === meId}
-                    grouped={grouped}
+                    mine={mine}
+                    grouped={shouldGroup(previous, message)}
+                    repliedTo={
+                      message.replyToId ? byId.get(message.replyToId) : undefined
+                    }
+                    receipt={mine ? receiptFor(message, partner) : null}
+                    onReply={() =>
+                      setReplyTo({
+                        id: message.id,
+                        preview:
+                          message.kind === "track"
+                            ? (message.trackRef?.title ?? "a song")
+                            : (message.body ?? ""),
+                        mine,
+                      })
+                    }
+                    onEdit={() => setEditing(message)}
+                    onDelete={() => void remove(message)}
                   />
                 </li>
               );
@@ -138,9 +226,21 @@ export function MessageThread({
       <Composer
         friendshipId={friendshipId}
         meId={meId}
-        onSent={onSent}
-        onConfirmed={onConfirmed}
-        onFailed={onFailed}
+        replyTo={replyTo}
+        editing={editing}
+        onCancelReply={() => setReplyTo(null)}
+        onCancelEdit={() => setEditing(null)}
+        onSubmitEdit={applyEdit}
+        onSent={(optimistic) => {
+          setMessages((cur) => [...cur, optimistic]);
+          setReplyTo(null);
+        }}
+        onConfirmed={(tempId, saved) =>
+          setMessages((cur) => cur.map((m) => (m.id === tempId ? saved : m)))
+        }
+        onFailed={(tempId) =>
+          setMessages((cur) => cur.filter((m) => m.id !== tempId))
+        }
       />
     </>
   );
@@ -150,10 +250,20 @@ function MessageRow({
   message,
   mine,
   grouped,
+  repliedTo,
+  receipt,
+  onReply,
+  onEdit,
+  onDelete,
 }: {
   message: Message;
   mine: boolean;
   grouped: boolean;
+  repliedTo: Message | undefined;
+  receipt: ReceiptState | null;
+  onReply: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
 }) {
   if (message.kind === "system") {
     return (
@@ -163,43 +273,95 @@ function MessageRow({
     );
   }
 
-  if (message.kind === "track" && message.trackRef) {
-    return <TrackCard track={message.trackRef} mine={mine} />;
-  }
-
   const deleted = Boolean(message.deletedAt);
 
   return (
     <div
       className={cn(
-        "flex max-w-[78%] flex-col",
-        mine ? "self-end items-end" : "self-start items-start",
-        grouped ? "mt-0" : "mt-1.5",
+        "group flex items-end gap-1",
+        mine ? "flex-row-reverse self-end" : "self-start",
+        grouped ? "mt-0.5" : "mt-2",
+        "max-w-[86%]",
       )}
     >
-      <div
-        className={cn(
-          "px-3.5 py-2.5 text-[13.5px] leading-relaxed",
-          mine
-            ? "rounded-[var(--r-lg)] rounded-br-[6px] border border-[rgba(255,79,151,0.36)] bg-[linear-gradient(135deg,rgba(255,79,151,0.32),rgba(162,77,238,0.2))]"
-            : "rounded-[var(--r-lg)] rounded-bl-[6px] border border-[rgba(59,141,255,0.3)] bg-[rgba(59,141,255,0.17)]",
-          deleted ? "text-tx-lo italic" : "text-tx-hi",
-          // Long unbroken strings would otherwise stretch the bubble.
-          "break-words whitespace-pre-wrap",
+      <div className={cn("flex flex-col", mine ? "items-end" : "items-start")}>
+        {repliedTo && (
+          <div
+            className={cn(
+              "mb-1 max-w-full truncate border-l-2 px-2 py-1 text-[11.5px]",
+              mine
+                ? "border-you-500 text-tx-mid"
+                : "border-them-500 text-tx-mid",
+            )}
+          >
+            {repliedTo.deletedAt
+              ? "Message deleted"
+              : repliedTo.kind === "track"
+                ? (repliedTo.trackRef?.title ?? "a song")
+                : repliedTo.body}
+          </div>
         )}
-      >
-        {deleted ? "Message deleted" : message.body}
+
+        {message.kind === "track" && message.trackRef ? (
+          <TrackCard track={message.trackRef} mine={mine} />
+        ) : (
+          <div
+            className={cn(
+              "px-3.5 py-2.5 text-[13.5px] leading-relaxed break-words whitespace-pre-wrap",
+              mine
+                ? "rounded-[var(--r-lg)] rounded-br-[6px] border border-[rgba(255,79,151,0.36)] bg-[linear-gradient(135deg,rgba(255,79,151,0.32),rgba(162,77,238,0.2))]"
+                : "rounded-[var(--r-lg)] rounded-bl-[6px] border border-[rgba(59,141,255,0.3)] bg-[rgba(59,141,255,0.17)]",
+              deleted ? "text-tx-lo italic" : "text-tx-hi",
+            )}
+          >
+            {deleted ? "Message deleted" : message.body}
+          </div>
+        )}
+
+        {!grouped && (
+          <span className="mt-1 flex items-center gap-1.5 px-1 text-[10px] text-tx-lo">
+            <span className="tabular-nums">{formatTime(message.createdAt)}</span>
+            {message.editedAt && !deleted && <span>edited</span>}
+            {receipt && <Receipt state={receipt} />}
+          </span>
+        )}
       </div>
-      {!grouped && (
-        <span className="mt-1 px-1 text-[10px] text-tx-lo tabular-nums">
-          {formatTime(message.createdAt)}
-        </span>
+
+      {!deleted && (
+        <MessageActions
+          mine={mine}
+          canEdit={message.kind === "text"}
+          align={mine ? "right" : "left"}
+          onReply={onReply}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
       )}
     </div>
   );
 }
 
-/** A song shared into the conversation. What stops this reading as a generic messenger. */
+/** Sending → sent → delivered → read, per FR-C4. */
+function Receipt({ state }: { state: ReceiptState }) {
+  const label = {
+    sending: "Sending",
+    sent: "Sent",
+    delivered: "Delivered",
+    read: "Read",
+  }[state];
+
+  return (
+    <span
+      className={cn(
+        "font-semibold",
+        state === "read" ? "text-you-400" : "text-tx-lo",
+      )}
+    >
+      {label}
+    </span>
+  );
+}
+
 function TrackCard({
   track,
   mine,
@@ -225,10 +387,10 @@ function TrackCard({
   return (
     <div
       className={cn(
-        "mt-1.5 flex max-w-[84%] items-center gap-3 border border-ink-500 bg-ink-700 p-2.5",
+        "flex items-center gap-3 border border-ink-500 bg-ink-700 p-2.5",
         mine
-          ? "self-end rounded-[var(--r-lg)] rounded-br-[6px]"
-          : "self-start rounded-[var(--r-lg)] rounded-bl-[6px]",
+          ? "rounded-[var(--r-lg)] rounded-br-[6px]"
+          : "rounded-[var(--r-lg)] rounded-bl-[6px]",
       )}
     >
       <Artwork
@@ -238,9 +400,7 @@ function TrackCard({
         rounded="rounded-[10px]"
       />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[13px] font-bold text-tx-hi">
-          {track.title}
-        </p>
+        <p className="truncate text-[13px] font-bold text-tx-hi">{track.title}</p>
         <p className="truncate text-[11.5px] text-tx-mid">{track.artist}</p>
       </div>
       <button

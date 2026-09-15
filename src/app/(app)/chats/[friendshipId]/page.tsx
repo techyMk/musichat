@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { loadFriendships, displayNameOf } from "@/lib/friends";
-import { loadMessages } from "@/lib/messages";
+import { loadMessages, loadPartnerWatermark } from "@/lib/messages";
 import { Avatar } from "@/components/ui/Avatar";
 import { MessageThread } from "@/components/chat/MessageThread";
 
@@ -29,7 +29,10 @@ export default async function ConversationPage({
   if (!friendship || friendship.status !== "accepted") notFound();
 
   const supabase = await createClient();
-  const messages = await loadMessages(supabase, friendshipId);
+  const [messages, watermark] = await Promise.all([
+    loadMessages(supabase, friendshipId),
+    loadPartnerWatermark(supabase, friendshipId, user.id),
+  ]);
   const name = displayNameOf(friendship.profile);
 
   return (
@@ -56,6 +59,7 @@ export default async function ConversationPage({
         meId={user.id}
         partnerName={name}
         initialMessages={messages}
+        initialWatermark={watermark}
       />
 
       {/* The mini player docks over the bottom edge when something is playing. */}

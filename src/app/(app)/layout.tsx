@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient, getUser } from "@/lib/supabase/server";
-import { loadFriendships } from "@/lib/friends";
+import { loadFriendships, displayNameOf } from "@/lib/friends";
+import { MessageToasts } from "@/components/chat/MessageToasts";
 import { FriendsList } from "@/components/FriendsList";
 import { AppNav, LegalLinks } from "@/components/AppNav";
 import { Wordmark } from "@/components/Wordmark";
@@ -110,6 +111,16 @@ export default async function AppLayout({
       {/* Mounted in the layout, not a page, so audio survives navigation. */}
       <MiniPlayer />
       <FullPlayer />
+
+      <MessageToasts
+        meId={user.id}
+        senders={friends.map((f) => ({
+          friendshipId: f.friendshipId,
+          userId: f.profile.id,
+          name: displayNameOf(f.profile),
+          avatarUrl: f.profile.avatar_url,
+        }))}
+      />
     </PlayerProvider>
   );
 }

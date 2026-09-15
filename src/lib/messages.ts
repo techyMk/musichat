@@ -19,7 +19,9 @@ export type Message = {
   kind: MessageKind;
   body: string | null;
   trackRef: TrackRef | null;
+  replyToId: string | null;
   createdAt: string;
+  editedAt: string | null;
   deletedAt: string | null;
 };
 
@@ -30,9 +32,14 @@ type Row = {
   kind: MessageKind;
   body: string | null;
   track_ref: TrackRef | null;
+  reply_to_id: string | null;
   created_at: string;
+  edited_at: string | null;
   deleted_at: string | null;
 };
+
+export const MESSAGE_COLUMNS =
+  "id, friendship_id, sender_id, kind, body, track_ref, reply_to_id, created_at, edited_at, deleted_at";
 
 export function toMessage(row: Row): Message {
   return {
@@ -42,9 +49,36 @@ export function toMessage(row: Row): Message {
     kind: row.kind,
     body: row.body,
     trackRef: row.track_ref,
+    replyToId: row.reply_to_id,
     createdAt: row.created_at,
+    editedAt: row.edited_at,
     deletedAt: row.deleted_at,
   };
+}
+
+export type Watermark = {
+  userId: string;
+  lastDeliveredAt: string;
+  lastReadAt: string;
+};
+
+export type ReceiptState = "sending" | "sent" | "delivered" | "read";
+
+/**
+ * A watermark rather than a per-message receipt: the partner's timestamps move
+ * forward, and every message older than them carries that state.
+ */
+export function receiptFor(
+  message: Message,
+  partner: Watermark | null,
+): ReceiptState {
+  if (message.id.startsWith("pending-")) return "sending";
+  if (!partner) return "sent";
+
+  const at = new Date(message.createdAt).getTime();
+  if (new Date(partner.lastReadAt).getTime() >= at) return "read";
+  if (new Date(partner.lastDeliveredAt).getTime() >= at) return "delivered";
+  return "sent";
 }
 
 export const PAGE_SIZE = 40;
@@ -57,12 +91,33 @@ export async function loadMessages(
 ): Promise<Message[]> {
   const { data } = await supabase
     .from("messages")
-    .select("id, friendship_id, sender_id, kind, body, track_ref, created_at, deleted_at")
+    .select(MESSAGE_COLUMNS)
     .eq("friendship_id", friendshipId)
     .order("created_at", { ascending: false })
     .limit(limit);
 
-  return ((data ?? []) as Row[]).map(toMessage).reverse();
+  return ((data ?? []) as unknown as Row[]).map(toMessage).reverse();
+}
+
+/** The other participant's delivered/read watermark for this conversation. */
+export async function loadPartnerWatermark(
+  supabase: SupabaseClient,
+  friendshipId: string,
+  meId: string,
+): Promise<Watermark | null> {
+  const { data } = await supabase
+    .from("friendship_reads")
+    .select("user_id, last_delivered_at, last_read_at")
+    .eq("friendship_id", friendshipId)
+    .neq("user_id", meId)
+    .maybeSingle();
+
+  if (!data) return null;
+  return {
+    userId: data.user_id,
+    lastDeliveredAt: data.last_delivered_at,
+    lastReadAt: data.last_read_at,
+  };
 }
 
 /** Messages within this window from the same sender are visually grouped. */
