@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { loadFriendships } from "@/lib/friends";
 import { FriendsList } from "@/components/FriendsList";
-import { AddFriendButton } from "@/components/AddFriendButton";
+import { AppNav, LegalLinks } from "@/components/AppNav";
 import { Avatar } from "@/components/ui/Avatar";
 
 /**
@@ -51,17 +51,23 @@ export default async function AppLayout({
         ].join(" ")}
       >
         <aside className="hidden w-[320px] shrink-0 flex-col border-r border-ink-600 bg-ink-900/50 lg:flex">
-          <header className="flex items-center gap-2.5 px-4 py-4">
-            <p className="font-display flex-1 text-[19px] font-bold tracking-tight text-tx-hi">
+          <header className="px-4 py-4">
+            <Link
+              href="/chats"
+              className="font-display text-[19px] font-bold tracking-tight text-tx-hi"
+            >
               Musi
               <span className="bg-[image:var(--together)] bg-clip-text text-transparent">
                 Chat
               </span>
-            </p>
-            <AddFriendButton count={pending.length} />
+            </Link>
           </header>
 
-          <div className="px-4 pb-3">
+          <div className="px-2">
+            <AppNav pendingCount={pending.length} />
+          </div>
+
+          <div className="px-4 pt-5 pb-2">
             <p className="text-[10px] font-bold tracking-[0.14em] text-tx-lo uppercase">
               Conversations
             </p>
@@ -71,26 +77,31 @@ export default async function AppLayout({
             {friends.length > 0 ? (
               <FriendsList friends={friends} />
             ) : (
-              <p className="px-3 py-4 text-[12.5px] leading-relaxed text-tx-lo">
+              <p className="px-3 py-3 text-[12.5px] leading-relaxed text-tx-lo">
                 No one here yet. Share your invite code and this fills up.
               </p>
             )}
           </div>
 
-          <Link
-            href="/me"
-            className="m-2 flex items-center gap-2.5 rounded-[var(--r-md)] px-2.5 py-2.5 transition-colors duration-[var(--dur-fast)] hover:bg-ink-700"
-          >
-            <Avatar name={myName} src={profile.avatar_url} size="md" />
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-[13px] font-bold text-tx-hi">
-                {myName}
+          <div className="border-t border-ink-600 p-2">
+            <Link
+              href="/me"
+              className="flex items-center gap-2.5 rounded-[var(--r-md)] px-2.5 py-2.5 transition-colors duration-[var(--dur-fast)] hover:bg-ink-700"
+            >
+              <Avatar name={myName} src={profile.avatar_url} size="md" />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[13px] font-bold text-tx-hi">
+                  {myName}
+                </span>
+                <span className="block truncate text-[11.5px] text-tx-lo">
+                  @{profile.username}
+                </span>
               </span>
-              <span className="block truncate text-[11.5px] text-tx-lo">
-                @{profile.username}
-              </span>
-            </span>
-          </Link>
+            </Link>
+            <div className="px-2.5 pt-2 pb-1">
+              <LegalLinks />
+            </div>
+          </div>
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">{children}</div>

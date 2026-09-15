@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { loadFriendships } from "@/lib/friends";
 import { FriendsList, FriendsEmptyState } from "@/components/FriendsList";
 import { AddFriendButton } from "@/components/AddFriendButton";
-import { Avatar } from "@/components/ui/Avatar";
+import { MobileMenu } from "@/components/MobileMenu";
 
 export const metadata: Metadata = {
   title: "Chats",
@@ -35,13 +34,12 @@ export default async function ChatsPage() {
       {/* Phone: this route IS the list, with its own header. Desktop already
           has the rail, so the header would be a duplicate. */}
       <header className="flex items-center gap-3 px-4 py-4 lg:hidden">
-        <Link href="/me" aria-label="Your profile">
-          <Avatar
-            name={profile.display_name || profile.username}
-            src={profile.avatar_url}
-            size="md"
-          />
-        </Link>
+        <MobileMenu
+          name={profile.display_name || profile.username}
+          username={profile.username}
+          avatarUrl={profile.avatar_url}
+          pendingCount={pending.length}
+        />
         <p className="font-display flex-1 text-[21px] font-bold tracking-tight text-tx-hi">
           Musi
           <span className="bg-[image:var(--together)] bg-clip-text text-transparent">
