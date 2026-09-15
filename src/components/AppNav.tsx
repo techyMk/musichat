@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChatIcon, AddPersonIcon, PersonIcon } from "@/components/icons";
+import {
+  HomeIcon,
+  ChatIcon,
+  AddPersonIcon,
+  PersonIcon,
+  SparkIcon,
+} from "@/components/icons";
 import { cn } from "@/lib/cn";
 
 /**
@@ -15,9 +21,11 @@ import { cn } from "@/lib/cn";
  * bottom edge back.
  */
 const ITEMS = [
+  { href: "/dashboard", label: "Dashboard", Icon: HomeIcon },
   { href: "/chats", label: "Chats", Icon: ChatIcon },
   { href: "/friends/add", label: "Add a friend", Icon: AddPersonIcon, badge: true },
   { href: "/me", label: "Your profile", Icon: PersonIcon },
+  { href: "/subscription", label: "Subscription", Icon: SparkIcon },
 ] as const;
 
 export function AppNav({

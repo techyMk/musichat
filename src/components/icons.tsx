@@ -12,6 +12,22 @@ const base = {
   "aria-hidden": true,
 };
 
+export function HomeIcon({ className }: Props) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M3 8.5 10 3l7 5.5V16a1 1 0 0 1-1 1h-3.5v-5h-5v5H4a1 1 0 0 1-1-1Z" />
+    </svg>
+  );
+}
+
+export function SparkIcon({ className }: Props) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M10 2.5 11.8 7l4.7 1.8-4.7 1.8L10 15l-1.8-4.4L3.5 8.8 8.2 7Z" />
+    </svg>
+  );
+}
+
 export function ChatIcon({ className }: Props) {
   return (
     <svg {...base} className={className}>
