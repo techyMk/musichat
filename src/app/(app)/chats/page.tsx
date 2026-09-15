@@ -4,8 +4,8 @@ import { redirect } from "next/navigation";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { loadFriendships } from "@/lib/friends";
 import { FriendsList, FriendsEmptyState } from "@/components/FriendsList";
+import { AddFriendButton } from "@/components/AddFriendButton";
 import { Avatar } from "@/components/ui/Avatar";
-import { AddFriendButton } from "./layout";
 
 export const metadata: Metadata = {
   title: "Chats",
@@ -31,26 +31,27 @@ export default async function ChatsPage() {
   const pending = friendships.filter((f) => f.status === "pending" && f.incoming);
 
   return (
-    <>
-      {/* Phone: this route IS the list. The rail is hidden below lg. */}
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 py-5 lg:hidden">
-        <header className="mb-5 flex items-center gap-3">
-          <Link href="/me" aria-label="Your profile">
-            <Avatar
-              name={profile.display_name || profile.username}
-              src={profile.avatar_url}
-              size="md"
-            />
-          </Link>
-          <p className="font-display flex-1 text-[21px] font-bold tracking-tight text-tx-hi">
-            Musi
-            <span className="bg-[image:var(--together)] bg-clip-text text-transparent">
-              Chat
-            </span>
-          </p>
-          <AddFriendButton count={pending.length} />
-        </header>
+    <div id="main" className="flex min-h-0 flex-1 flex-col">
+      {/* Phone: this route IS the list, with its own header. Desktop already
+          has the rail, so the header would be a duplicate. */}
+      <header className="flex items-center gap-3 px-4 py-4 lg:hidden">
+        <Link href="/me" aria-label="Your profile">
+          <Avatar
+            name={profile.display_name || profile.username}
+            src={profile.avatar_url}
+            size="md"
+          />
+        </Link>
+        <p className="font-display flex-1 text-[21px] font-bold tracking-tight text-tx-hi">
+          Musi
+          <span className="bg-[image:var(--together)] bg-clip-text text-transparent">
+            Chat
+          </span>
+        </p>
+        <AddFriendButton count={pending.length} />
+      </header>
 
+      <div className="flex min-h-0 flex-1 flex-col px-3 pb-5 lg:hidden">
         {friends.length > 0 ? (
           <FriendsList friends={friends} />
         ) : (
@@ -58,7 +59,7 @@ export default async function ChatsPage() {
         )}
       </div>
 
-      {/* Desktop: the rail already shows the list, so this pane invites a pick. */}
+      {/* Desktop: the rail lists conversations, so this pane invites a pick. */}
       <div className="hidden flex-1 flex-col lg:flex">
         {friends.length > 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 text-center">
@@ -73,6 +74,6 @@ export default async function ChatsPage() {
           <FriendsEmptyState hasPending={pending.length > 0} />
         )}
       </div>
-    </>
+    </div>
   );
 }

@@ -40,18 +40,26 @@ export async function signUp(
   formData: FormData,
 ): Promise<FormState> {
   const { email, password } = readCredentials(formData);
+  const invite = String(formData.get("invite") ?? "").trim();
 
   if (!email.includes("@")) return { error: "That doesn't look like an email address." };
   if (password.length < MIN_PASSWORD)
     return { error: `Passwords need at least ${MIN_PASSWORD} characters.` };
+
+  // An invited signup returns to the invite so the code is redeemed on the
+  // way through. Everyone else goes straight to onboarding.
+  const destination = invite
+    ? `/invite/${encodeURIComponent(invite)}`
+    : "/onboarding/username";
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      // Straight into onboarding once the email is confirmed.
-      emailRedirectTo: absoluteUrl("/auth/callback?next=/onboarding/username"),
+      emailRedirectTo: absoluteUrl(
+        `/auth/callback?next=${encodeURIComponent(destination)}`,
+      ),
     },
   });
 

@@ -9,7 +9,13 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function UsernamePage() {
+export default async function UsernamePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ invite?: string }>;
+}) {
+  const { invite } = await searchParams;
+
   const user = await getUser();
   if (!user) redirect("/login");
 
@@ -28,7 +34,7 @@ export default async function UsernamePage() {
       title="Pick your username"
       subtitle="This is how friends find you. It's the only thing we actually need."
     >
-      <UsernameForm />
+      <UsernameForm invite={invite} />
     </AuthShell>
   );
 }

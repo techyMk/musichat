@@ -13,7 +13,7 @@ const DEBOUNCE_MS = 400;
 
 type Answer = { name: string; free: boolean };
 
-export function UsernameForm() {
+export function UsernameForm({ invite }: { invite?: string }) {
   const [state, action, pending] = useActionState<FormState, FormData>(
     claimUsername,
     {},
@@ -64,6 +64,7 @@ export function UsernameForm() {
 
   return (
     <form action={action} className="flex flex-col gap-4">
+      {invite && <input type="hidden" name="invite" value={invite} />}
       <div>
         <Field
           label="Username"

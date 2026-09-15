@@ -10,7 +10,13 @@ export const metadata: Metadata = {
     "Create a MusiChat account and start listening together with the people you care about.",
 };
 
-export default function SignupPage() {
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ invite?: string }>;
+}) {
+  const { invite } = await searchParams;
+
   return (
     <AuthShell
       title="Create an account"
@@ -24,9 +30,11 @@ export default function SignupPage() {
         </p>
       }
     >
-      <SignupForm />
+      <SignupForm invite={invite} />
       <OrDivider />
-      <GoogleButton />
+      <GoogleButton
+        next={invite ? `/invite/${encodeURIComponent(invite)}` : "/chats"}
+      />
     </AuthShell>
   );
 }

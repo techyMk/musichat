@@ -18,6 +18,7 @@ export async function claimUsername(
   const username = String(formData.get("username") ?? "")
     .trim()
     .toLowerCase();
+  const invite = String(formData.get("invite") ?? "").trim();
 
   if (!USERNAME_PATTERN.test(username)) {
     return {
@@ -42,6 +43,16 @@ export async function claimUsername(
       return { error: `@${username} was just taken. Try another.` };
     }
     return { error: "Couldn't save that username. Try again in a moment." };
+  }
+
+  // Invited users skip profile setup entirely and land in the conversation
+  // (UX.md §6.2). They came for one specific person — asking them to write a
+  // bio first is friction at exactly the wrong moment.
+  if (invite) {
+    const { data: friendshipId } = await supabase.rpc("redeem_invite", {
+      invite_code: invite,
+    });
+    if (friendshipId) redirect(`/chats/${friendshipId}`);
   }
 
   redirect("/onboarding/profile");
