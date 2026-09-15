@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ButtonLink } from "@/components/ui/Button";
 
 export default function Home() {
   return (
@@ -17,21 +17,18 @@ export default function Home() {
       </h1>
 
       <p className="mb-10 text-[15px] leading-relaxed text-tx-mid">
-        The shell is deployed and the design tokens are live. Nothing else is
-        built yet — the next thing to prove is that two devices can hold the
-        same song.
+        The shell is deployed, the design tokens are live, and two devices have
+        been proven to hold the same song. Accounts come next.
       </p>
 
-      <Link
-        href="/spike"
-        className="rounded-full bg-[image:var(--together)] py-3.5 text-center font-bold text-white"
-      >
-        Open the sync spike
-      </Link>
-
-      <p className="mt-4 text-center text-[13px] text-tx-lo">
-        Throwaway code. Delete it once the question is answered.
-      </p>
+      <div className="flex flex-col gap-2.5">
+        <ButtonLink href="/spike" full>
+          Open the sync spike
+        </ButtonLink>
+        <p className="text-center text-[13px] text-tx-lo">
+          Test harness. It goes away when the real player ships.
+        </p>
+      </div>
     </main>
   );
 }

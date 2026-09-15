@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
-import { supabase, supabaseConfigured } from "@/lib/supabase";
+import { createClient, supabaseConfigured } from "@/lib/supabase/client";
 import { measureClock, type Clock } from "@/lib/clock";
 import {
   classifyDrift,
@@ -41,6 +41,12 @@ export default function SpikePage() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
 
+  // Lazy initialiser so the client is built once, without touching a ref
+  // during render.
+  const [client] = useState(() =>
+    supabaseConfigured ? createClient() : null,
+  );
+
   const [clock, setClock] = useState<Clock | null>(null);
   const [state, setState] = useState<SessionState>(INITIAL);
   const [drift, setDrift] = useState(0);
@@ -48,12 +54,20 @@ export default function SpikePage() {
   const [lastAction, setLastAction] = useState<string>("none");
   const [status, setStatus] = useState("connecting");
   const [armed, setArmed] = useState(false);
+  // Sampled by the drift loop so render never has to read a ref.
+  const [readout, setReadout] = useState({ expected: 0, actual: 0 });
 
   // Intervals read these, and would otherwise capture stale values.
   const clockRef = useRef<Clock | null>(null);
   const stateRef = useRef(state);
-  clockRef.current = clock;
-  stateRef.current = state;
+
+  useEffect(() => {
+    clockRef.current = clock;
+  }, [clock]);
+
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   const serverNow = useCallback(
     () => Date.now() + (clockRef.current?.offset ?? 0),
@@ -93,7 +107,6 @@ export default function SpikePage() {
   }, []);
 
   useEffect(() => {
-    const client = supabase;
     if (!client) return;
 
     const channel = client.channel(ROOM, {
@@ -129,7 +142,7 @@ export default function SpikePage() {
       void client.removeChannel(channel);
       channelRef.current = null;
     };
-  }, []);
+  }, [client]);
 
   /* ---------------- enforce play/pause ---------------- */
 
@@ -153,12 +166,16 @@ export default function SpikePage() {
     const id = setInterval(() => {
       const audio = audioRef.current;
       const current = stateRef.current;
-      if (!audio || !current.isPlaying || audio.paused) return;
+      if (!audio) return;
 
       const expected = expectedPosition(current, serverNow());
       const actual = audio.currentTime * 1000;
-      const d = actual - expected;
+      setReadout({ expected, actual });
 
+      // Drift is only meaningful while the song is actually moving.
+      if (!current.isPlaying || audio.paused) return;
+
+      const d = actual - expected;
       setDrift(d);
       setWorstDrift((w) => (Math.abs(d) > Math.abs(w) ? d : w));
 
@@ -294,14 +311,8 @@ export default function SpikePage() {
           value={clock ? `${Math.round(clock.offset)}ms` : "measuring…"}
         />
         <Row label="Latency" value={clock ? `${clock.rtt}ms rtt` : "—"} />
-        <Row
-          label="Expected"
-          value={fmt(expectedPosition(state, serverNow()))}
-        />
-        <Row
-          label="Actual"
-          value={fmt((audioRef.current?.currentTime ?? 0) * 1000)}
-        />
+        <Row label="Expected" value={fmt(readout.expected)} />
+        <Row label="Actual" value={fmt(readout.actual)} />
       </dl>
 
       <p className="mt-8 text-[13px] leading-relaxed text-[#756D93]">
