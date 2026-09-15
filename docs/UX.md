@@ -107,8 +107,7 @@ Every screen has a URL. This is a PWA advantage and it is used deliberately: any
 
 | Route | Screen | Auth | Notes |
 |---|---|---|---|
-| `/` | Redirect | — | → `/chats` if authed, else `/welcome` |
-| `/welcome` | Auth landing | No | Value proposition + Log in / Sign up |
+| `/` | **Landing** | No | Value proposition + Create account / Log in. Redirects to `/chats` when already signed in. |
 | `/signup` | Sign up | No | Email+password or Google |
 | `/login` | Log in | No | |
 | `/forgot` | Forgot password | No | |
@@ -135,9 +134,14 @@ Every screen has a URL. This is a PWA advantage and it is used deliberately: any
 ### 6.1 Organic first run — found the app independently
 
 ```
-/welcome → /signup → verify email → /onboarding/username
+/ → /signup → verify email → /onboarding/username
     → /onboarding/profile → /friends/add → /chats (empty)
 ```
+
+**Changed during M1:** the landing lives at `/` rather than at a separate
+`/welcome`. Splitting it off added a redirect hop for every first-time visitor
+— including anyone who types the bare domain after seeing an invite — and moved
+the marketing page off the canonical URL for no benefit.
 
 **Step notes:**
 

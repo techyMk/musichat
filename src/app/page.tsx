@@ -1,33 +1,50 @@
+import type { Metadata } from "next";
+import Image from "next/image";
+import { redirect } from "next/navigation";
+import { getUser } from "@/lib/supabase/server";
 import { ButtonLink } from "@/components/ui/Button";
 
-export default function Home() {
+export const metadata: Metadata = {
+  // The root IS the landing page, so it is its own canonical.
+  alternates: { canonical: "/" },
+};
+
+export default async function Home() {
+  // Signed-in visitors have no use for the pitch.
+  if (await getUser()) redirect("/chats");
+
   return (
     <main
       id="main"
-      className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center px-6 py-16"
+      className="mx-auto flex w-full max-w-sm flex-1 flex-col px-6 py-14"
     >
-      <p className="mb-2 text-[11px] font-bold tracking-[0.14em] text-tx-lo uppercase">
-        Milestone 0 · foundations
-      </p>
+      <div className="flex flex-1 flex-col items-center justify-center text-center">
+        <Image
+          src="/brand/icon-transparent.png"
+          alt=""
+          width={104}
+          height={104}
+          priority
+          className="mb-7 h-26 w-26"
+        />
 
-      <h1 className="font-display mb-4 text-4xl leading-tight font-bold tracking-tight text-tx-hi">
-        Even when you&apos;re apart,
-        <br />
-        listen together.
-      </h1>
+        <h1 className="font-display mb-3 text-[30px] leading-[1.15] font-bold tracking-tight text-tx-hi text-balance">
+          Even when you&apos;re apart, listen together.
+        </h1>
 
-      <p className="mb-10 text-[15px] leading-relaxed text-tx-mid">
-        The shell is deployed, the design tokens are live, and two devices have
-        been proven to hold the same song. Accounts come next.
-      </p>
+        <p className="text-[14px] leading-relaxed text-tx-mid text-balance">
+          Chat and play the same song at the same moment, with the one person
+          you&apos;d text at 2am.
+        </p>
+      </div>
 
       <div className="flex flex-col gap-2.5">
-        <ButtonLink href="/spike" full>
-          Open the sync spike
+        <ButtonLink href="/signup" full>
+          Create an account
         </ButtonLink>
-        <p className="text-center text-[13px] text-tx-lo">
-          Test harness. It goes away when the real player ships.
-        </p>
+        <ButtonLink href="/login" variant="ghost" full>
+          I already have one
+        </ButtonLink>
       </div>
     </main>
   );
