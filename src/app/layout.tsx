@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Gabarito, Figtree } from "next/font/google";
+import { siteUrl } from "@/lib/site";
 import "./globals.css";
 
 const gabarito = Gabarito({
@@ -11,9 +12,6 @@ const figtree = Figtree({
   variable: "--font-figtree",
   subsets: ["latin"],
 });
-
-// The one place the base URL lives — ARCHITECTURE.md §9.1.
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
