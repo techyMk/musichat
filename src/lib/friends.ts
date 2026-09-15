@@ -1,4 +1,6 @@
+import { cache } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/server";
 
 export type FriendProfile = {
   id: string;
@@ -82,3 +84,13 @@ export async function getFriendships(
 export function displayNameOf(p: FriendProfile) {
   return p.display_name?.trim() || p.username;
 }
+
+/**
+ * Cached for the render pass. The two-pane desktop layout asks for the same
+ * list from both the sidebar and the page, and this collapses that into one
+ * round trip.
+ */
+export const loadFriendships = cache(async (myId: string) => {
+  const supabase = await createClient();
+  return getFriendships(supabase, myId);
+});

@@ -43,7 +43,10 @@ export default async function AddFriendPage({
   const outgoing = friendships.filter((f) => f.status === "pending" && !f.incoming);
 
   return (
-    <main id="main" className="mx-auto w-full max-w-sm flex-1 px-5 pt-5 pb-10">
+    <main
+      id="main"
+      className="mx-auto w-full max-w-md flex-1 px-5 pt-5 pb-10 sm:pt-10"
+    >
       <header className="mb-5 flex items-center gap-2.5">
         <Link href="/chats" className="text-[18px] text-tx-mid hover:text-tx-hi">
           ‹<span className="sr-only">Back to chats</span>
