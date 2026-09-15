@@ -4,6 +4,7 @@ import { createClient, getUser } from "@/lib/supabase/server";
 import { loadFriendships } from "@/lib/friends";
 import { FriendsList } from "@/components/FriendsList";
 import { AppNav, LegalLinks } from "@/components/AppNav";
+import { Wordmark } from "@/components/Wordmark";
 import { Avatar } from "@/components/ui/Avatar";
 
 /**
@@ -52,15 +53,7 @@ export default async function AppLayout({
       >
         <aside className="hidden w-[320px] shrink-0 flex-col border-r border-ink-600 bg-ink-900/50 lg:flex">
           <header className="px-4 py-4">
-            <Link
-              href="/chats"
-              className="font-display text-[19px] font-bold tracking-tight text-tx-hi"
-            >
-              Musi
-              <span className="bg-[image:var(--together)] bg-clip-text text-transparent">
-                Chat
-              </span>
-            </Link>
+            <Wordmark href="/dashboard" size="sm" />
           </header>
 
           <div className="px-2">

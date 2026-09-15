@@ -5,6 +5,7 @@ import { loadFriendships } from "@/lib/friends";
 import { FriendsList, FriendsEmptyState } from "@/components/FriendsList";
 import { AddFriendButton } from "@/components/AddFriendButton";
 import { MobileMenu } from "@/components/MobileMenu";
+import { Wordmark } from "@/components/Wordmark";
 
 export const metadata: Metadata = {
   title: "Chats",
@@ -40,12 +41,7 @@ export default async function ChatsPage() {
           avatarUrl={profile.avatar_url}
           pendingCount={pending.length}
         />
-        <p className="font-display flex-1 text-[21px] font-bold tracking-tight text-tx-hi">
-          Musi
-          <span className="bg-[image:var(--together)] bg-clip-text text-transparent">
-            Chat
-          </span>
-        </p>
+        <Wordmark href="/dashboard" size="sm" className="flex-1" />
         <AddFriendButton count={pending.length} />
       </header>
 

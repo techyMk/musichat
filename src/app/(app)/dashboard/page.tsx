@@ -31,8 +31,10 @@ export default async function DashboardPage() {
   const friends = friendships.filter((f) => f.status === "accepted");
   const pending = friendships.filter((f) => f.status === "pending" && f.incoming);
 
-  const { data: code } = await supabase.rpc("get_or_create_invite");
-  const link = absoluteUrl(`/invite/${code}`);
+  // A failed code must not become the string "null" inside a share link.
+  const { data: inviteCode } = await supabase.rpc("get_or_create_invite");
+  const code = typeof inviteCode === "string" ? inviteCode : null;
+  const link = code ? absoluteUrl(`/invite/${code}`) : null;
 
   const firstName = (profile.display_name || profile.username).split(" ")[0];
 
@@ -117,10 +119,20 @@ export default async function DashboardPage() {
           <h3 className="mb-1 text-[11px] font-bold tracking-[0.14em] text-tx-lo uppercase">
             Your invite code
           </h3>
-          <p className="font-display mb-4 text-[26px] font-bold tracking-[0.08em] text-tx-hi">
-            {code}
-          </p>
-          <InviteActions link={link} code={code as string} />
+
+          {code && link ? (
+            <>
+              <p className="font-display mb-4 text-[26px] font-bold tracking-[0.08em] text-tx-hi">
+                {code}
+              </p>
+              <InviteActions link={link} code={code} />
+            </>
+          ) : (
+            <p className="mt-2 text-[13px] leading-relaxed text-tx-mid">
+              Couldn&apos;t create a code right now. Reload to try again — if it
+              persists, the invite-code migration may not have run.
+            </p>
+          )}
         </section>
 
         <section>

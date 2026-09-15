@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
 import { ButtonLink } from "@/components/ui/Button";
 import { PublicFooter } from "@/components/PublicPage";
+import { Wordmark } from "@/components/Wordmark";
 import { SectionHeading, Card, Faq, PlanCard } from "@/components/marketing";
 
 export const metadata: Metadata = {
@@ -98,22 +98,16 @@ const FAQS = [
 ];
 
 export default async function Home() {
-  // Signed-in visitors have no use for the pitch.
-  if (await getUser()) redirect("/dashboard");
+  // The home page stays reachable when signed in — it is the public face of
+  // the product, and bouncing people straight to the app means they can never
+  // look at it again. The calls to action change instead of the page.
+  const user = await getUser();
 
   return (
     <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-6 sm:px-8">
       {/* Top bar */}
       <header className="flex items-center gap-4 py-5">
-        <Link
-          href="/"
-          className="font-display flex-1 text-[20px] font-bold tracking-tight text-tx-hi"
-        >
-          Musi
-          <span className="bg-[image:var(--together)] bg-clip-text text-transparent">
-            Chat
-          </span>
-        </Link>
+        <Wordmark href="/" size="md" className="flex-1" />
         <nav className="hidden items-center gap-6 text-[13.5px] text-tx-mid sm:flex">
           <a href="#how" className="hover:text-tx-hi">
             How it works
@@ -126,10 +120,10 @@ export default async function Home() {
           </Link>
         </nav>
         <Link
-          href="/login"
+          href={user ? "/dashboard" : "/login"}
           className="text-[13.5px] font-bold text-tx-hi hover:underline"
         >
-          Sign in
+          {user ? "Open app" : "Sign in"}
         </Link>
       </header>
 
@@ -157,17 +151,35 @@ export default async function Home() {
           </p>
 
           <div className="flex w-full max-w-sm flex-col gap-2.5 sm:flex-row lg:max-w-none">
-            <ButtonLink href="/signup" full className="sm:w-auto sm:px-8">
-              Create an account
-            </ButtonLink>
-            <ButtonLink
-              href="/login"
-              variant="ghost"
-              full
-              className="sm:w-auto sm:px-8"
-            >
-              Sign in
-            </ButtonLink>
+            {user ? (
+              <>
+                <ButtonLink href="/dashboard" full className="sm:w-auto sm:px-8">
+                  Go to your dashboard
+                </ButtonLink>
+                <ButtonLink
+                  href="/friends/add"
+                  variant="ghost"
+                  full
+                  className="sm:w-auto sm:px-8"
+                >
+                  Invite someone
+                </ButtonLink>
+              </>
+            ) : (
+              <>
+                <ButtonLink href="/signup" full className="sm:w-auto sm:px-8">
+                  Create an account
+                </ButtonLink>
+                <ButtonLink
+                  href="/login"
+                  variant="ghost"
+                  full
+                  className="sm:w-auto sm:px-8"
+                >
+                  Sign in
+                </ButtonLink>
+              </>
+            )}
           </div>
 
           <p className="mt-4 text-[12px] text-tx-lo">
@@ -288,8 +300,8 @@ export default async function Home() {
             Make an account, send one invite, put something on. They&apos;ll
             hear it wherever they are.
           </p>
-          <ButtonLink href="/signup" className="px-10">
-            Create an account
+          <ButtonLink href={user ? "/friends/add" : "/signup"} className="px-10">
+            {user ? "Invite someone" : "Create an account"}
           </ButtonLink>
         </div>
       </section>

@@ -84,7 +84,25 @@ export default async function AddFriendPage({
 
 async function InviteTab() {
   const supabase = await createClient();
-  const { data: code } = await supabase.rpc("get_or_create_invite");
+  const { data: code, error } = await supabase.rpc("get_or_create_invite");
+
+  // Never render a link built from a null code. Silently interpolating the
+  // failure produced /invite/null, which looked like a working link and was
+  // not — the error has to be visible.
+  if (error || !code) {
+    return (
+      <section className="rounded-[var(--r-md)] border border-[rgba(249,69,69,0.3)] bg-[rgba(249,69,69,0.08)] p-5 text-center">
+        <h2 className="mb-1.5 text-[15px] font-bold text-tx-hi">
+          Couldn&apos;t create your invite code
+        </h2>
+        <p className="text-[13px] leading-relaxed text-tx-mid">
+          Reload the page to try again. If it keeps happening, the database
+          migration for invite codes may not have run yet.
+        </p>
+      </section>
+    );
+  }
+
   const link = absoluteUrl(`/invite/${code}`);
 
   // Rendered on the server so no QR library reaches the browser bundle.

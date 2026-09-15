@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Gabarito, Figtree } from "next/font/google";
 import { siteUrl } from "@/lib/site";
 import "./globals.css";
@@ -22,6 +22,21 @@ export const metadata: Metadata = {
   description:
     "Chat and play the same song at the same moment, with the one person you'd text at 2am.",
   applicationName: "MusiChat",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "MusiChat",
+    statusBarStyle: "black-translucent",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#141128",
+  colorScheme: "dark",
+  // The app is a full-height layout; letting it zoom-bounce on iOS makes the
+  // fixed chrome drift.
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
