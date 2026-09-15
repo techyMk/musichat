@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
-import { supabase, supabaseConfigured } from "@/lib/supabase";
+import { createClient, supabaseConfigured } from "@/lib/supabase/client";
 import { measureClock, type Clock } from "@/lib/clock";
 import {
   classifyDrift,
@@ -40,6 +40,12 @@ const INITIAL: SessionState = {
 export default function SpikePage() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
+
+  // Lazy initialiser so the client is built once, without touching a ref
+  // during render.
+  const [client] = useState(() =>
+    supabaseConfigured ? createClient() : null,
+  );
 
   const [clock, setClock] = useState<Clock | null>(null);
   const [state, setState] = useState<SessionState>(INITIAL);
@@ -101,7 +107,6 @@ export default function SpikePage() {
   }, []);
 
   useEffect(() => {
-    const client = supabase;
     if (!client) return;
 
     const channel = client.channel(ROOM, {
@@ -137,7 +142,7 @@ export default function SpikePage() {
       void client.removeChannel(channel);
       channelRef.current = null;
     };
-  }, []);
+  }, [client]);
 
   /* ---------------- enforce play/pause ---------------- */
 
