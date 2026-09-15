@@ -101,8 +101,74 @@ export async function resendConfirmation(
   return { error: undefined };
 }
 
-export async function signOut() {
+export async function signInWithGoogle(formData: FormData) {
+  const next = safeNext(String(formData.get("next") ?? ""));
+
   const supabase = await createClient();
-  await supabase.auth.signOut();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: absoluteUrl(`/auth/callback?next=${encodeURIComponent(next)}`),
+    },
+  });
+
+  if (error || !data?.url) redirect("/login?error=oauth");
+  redirect(data.url);
+}
+
+export async function requestPasswordReset(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const email = String(formData.get("email") ?? "")
+    .trim()
+    .toLowerCase();
+
+  if (!email.includes("@")) return { error: "That doesn't look like an email address." };
+
+  const supabase = await createClient();
+  // The result is ignored on purpose. Reporting whether the address exists
+  // would turn this form into a way of discovering who has an account.
+  await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: absoluteUrl("/auth/callback?next=/reset"),
+  });
+
+  redirect(`/forgot?sent=${encodeURIComponent(email)}`);
+}
+
+export async function updatePassword(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const password = String(formData.get("password") ?? "");
+  const confirm = String(formData.get("confirm") ?? "");
+
+  if (password.length < MIN_PASSWORD)
+    return { error: `Passwords need at least ${MIN_PASSWORD} characters.` };
+  if (password !== confirm) return { error: "Those two passwords don't match." };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Arriving here without a session means the recovery link expired or was
+  // already used.
+  if (!user) redirect("/login?error=link");
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return { error: humanize(error.message) };
+
+  // Everything else gets logged out — if someone else knew the old password,
+  // this is the moment that stops mattering.
+  await supabase.auth.signOut({ scope: "others" });
+
+  redirect("/chats");
+}
+
+export async function signOut(formData?: FormData) {
+  const everywhere = formData?.get("scope") === "global";
+  const supabase = await createClient();
+  await supabase.auth.signOut(everywhere ? { scope: "global" } : undefined);
   redirect("/login");
 }

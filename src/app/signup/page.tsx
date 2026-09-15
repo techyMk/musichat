@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AuthShell } from "@/components/AuthShell";
+import { GoogleButton, OrDivider } from "@/components/GoogleButton";
 import { SignupForm } from "./SignupForm";
 
 export const metadata: Metadata = {
@@ -24,6 +25,8 @@ export default function SignupPage() {
       }
     >
       <SignupForm />
+      <OrDivider />
+      <GoogleButton />
     </AuthShell>
   );
 }

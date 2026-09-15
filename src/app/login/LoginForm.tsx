@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { signIn, type FormState } from "@/app/auth/actions";
 import { Button } from "@/components/ui/Button";
@@ -31,13 +32,21 @@ export function LoginForm({
         required
       />
 
-      <Field
-        label="Password"
-        name="password"
-        type="password"
-        autoComplete="current-password"
-        required
-      />
+      <div className="flex flex-col gap-1">
+        <Field
+          label="Password"
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          required
+        />
+        <Link
+          href="/forgot"
+          className="self-end text-[12px] text-tx-lo hover:text-tx-mid"
+        >
+          Forgot your password?
+        </Link>
+      </div>
 
       <FormError message={state.error ?? linkError} />
 

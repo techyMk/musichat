@@ -16,7 +16,7 @@ export default async function ProfilePage() {
   const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username, display_name, bio, genres")
+    .select("username, display_name, bio, genres, avatar_url")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -29,10 +29,12 @@ export default async function ProfilePage() {
       subtitle="All of this is optional, and you can change it whenever."
     >
       <ProfileForm
+        userId={user.id}
         username={profile.username}
         displayName={profile.display_name ?? ""}
         bio={profile.bio ?? ""}
         genres={profile.genres ?? []}
+        avatarUrl={profile.avatar_url}
       />
     </AuthShell>
   );

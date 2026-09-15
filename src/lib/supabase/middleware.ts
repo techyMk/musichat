@@ -2,10 +2,20 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 /** Signed-in users are bounced away from these. */
-const AUTH_ROUTES = ["/login", "/signup", "/verify"];
+const AUTH_ROUTES = ["/login", "/signup", "/verify", "/forgot"];
 
-/** Everything under these requires a session. */
-const PROTECTED_PREFIXES = ["/chats", "/me", "/friends", "/onboarding"];
+/**
+ * Everything under these requires a session. `/reset` is included because a
+ * password recovery link signs you in first — arriving without a session
+ * means the link expired or was already used.
+ */
+const PROTECTED_PREFIXES = [
+  "/chats",
+  "/me",
+  "/friends",
+  "/onboarding",
+  "/reset",
+];
 
 function isProtected(pathname: string) {
   return PROTECTED_PREFIXES.some(

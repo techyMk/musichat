@@ -13,19 +13,23 @@ import type { FormState } from "@/app/auth/actions";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Chip } from "@/components/ui/Chip";
-import { Avatar } from "@/components/ui/Avatar";
+import { AvatarUpload } from "@/components/AvatarUpload";
 import { FormError } from "@/components/AuthShell";
 
 export function ProfileForm({
+  userId,
   username,
   displayName,
   bio,
   genres,
+  avatarUrl,
 }: {
+  userId: string;
   username: string;
   displayName: string;
   bio: string;
   genres: string[];
+  avatarUrl: string | null;
 }) {
   const [state, action, pending] = useActionState<FormState, FormData>(
     saveProfile,
@@ -47,15 +51,11 @@ export function ProfileForm({
 
   return (
     <form action={action} className="flex flex-col gap-5">
-      <div className="flex items-center gap-3">
-        <Avatar name={name || username} size="xl" />
-        <div>
-          <p className="text-[13px] font-bold text-tx-hi">Your photo</p>
-          <p className="text-[11.5px] text-tx-lo">
-            Arriving in the next step of the build.
-          </p>
-        </div>
-      </div>
+      <AvatarUpload
+        userId={userId}
+        name={name || username}
+        initialUrl={avatarUrl}
+      />
 
       <Field
         label="Display name"

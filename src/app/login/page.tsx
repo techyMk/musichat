@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AuthShell } from "@/components/AuthShell";
+import { GoogleButton, OrDivider } from "@/components/GoogleButton";
 import { LoginForm } from "./LoginForm";
 import { safeNext } from "@/lib/safe-next";
 
@@ -35,9 +36,13 @@ export default async function LoginPage({
         linkError={
           params.error === "link"
             ? "That link has expired or was already used. Log in, or request a new one."
-            : undefined
+            : params.error === "oauth"
+              ? "Google sign-in didn't complete. Try again, or use your email."
+              : undefined
         }
       />
+      <OrDivider />
+      <GoogleButton next={next} />
     </AuthShell>
   );
 }

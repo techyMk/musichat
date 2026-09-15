@@ -52,11 +52,19 @@ export default async function ChatsPage() {
         </p>
       </div>
 
-      <form action={signOut} className="mt-8">
-        <Button variant="ghost" full type="submit">
-          Sign out
-        </Button>
-      </form>
+      <div className="mt-8 flex flex-col gap-1">
+        <form action={signOut}>
+          <Button variant="ghost" full type="submit">
+            Sign out
+          </Button>
+        </form>
+        <form action={signOut}>
+          <input type="hidden" name="scope" value="global" />
+          <Button variant="skip" full type="submit">
+            Sign out on all devices
+          </Button>
+        </form>
+      </div>
     </main>
   );
 }
