@@ -348,15 +348,30 @@ Two things to do now so the eventual move costs an afternoon instead of a weeken
 share only `musichat.vercel.app` — never `musichat-git-main-username.vercel.app`, which reads as a
 build artifact and kills trust instantly.
 
-**2. Never hardcode the base URL.** Put it in one place:
+**2. Never hardcode the base URL.** It resolves in exactly one place, `src/lib/site.ts`, and everything
+derives from there — Open Graph tags, the OG image endpoint, invite links, the PWA manifest `start_url`,
+Supabase Auth redirects, and the Google OAuth callback. Hardcoded URLs scattered across the codebase are
+what turn a domain change into a multi-day bug hunt.
 
-```
-NEXT_PUBLIC_SITE_URL=https://musichat.vercel.app
-```
+Resolution order, first valid value wins:
 
-Everything that needs an absolute URL derives from it — Open Graph tags, the OG image endpoint, invite
-links, the PWA manifest `start_url`, Supabase Auth redirects, and the Google OAuth callback. Hardcoded
-URLs scattered across the codebase are what turn a domain change into a multi-day bug hunt.
+1. `NEXT_PUBLIC_SITE_URL` — set this only once a custom domain exists
+2. `VERCEL_PROJECT_PRODUCTION_URL` — the stable production domain, unchanged between deploys
+3. `VERCEL_URL` — the per-deployment URL, so preview builds get correct absolute links
+4. `http://localhost:3000`
+
+**`NEXT_PUBLIC_SITE_URL` is optional on Vercel and should be left unset until the domain is bought.**
+There is a chicken-and-egg problem on a first deploy — the URL does not exist until the deploy does — so
+the system variables cover it.
+
+Every candidate is trimmed, given a scheme if missing, and parsed inside a `try`. A blank or malformed
+value falls through to the next candidate instead of throwing.
+
+> **This shipped broken once.** The first version used `process.env.NEXT_PUBLIC_SITE_URL ?? fallback`.
+> `??` only catches `null` and `undefined`, so an environment variable defined as an *empty string*
+> passed straight through to `new URL("")`, which threw at module load and failed the entire Vercel
+> build with `ERR_INVALID_URL`. Empty-string env vars are the normal case, not an edge case — a
+> dashboard field left blank produces one. Validate, never coalesce.
 
 **When the domain arrives:** point DNS at Vercel, update the env var, update the Supabase Auth redirect
 allowlist and the Google OAuth authorized redirect URIs, and **keep the `vercel.app` subdomain alive as a
