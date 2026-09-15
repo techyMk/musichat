@@ -62,8 +62,12 @@ export default async function ChatsPage() {
       {/* Desktop: the rail lists conversations, so this pane invites a pick. */}
       <div className="hidden flex-1 flex-col lg:flex">
         {friends.length > 0 ? (
-          <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 text-center">
-            <h2 className="font-display text-[22px] font-bold tracking-tight text-tx-hi">
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
+            <div
+              aria-hidden="true"
+              className="mb-1 h-1 w-14 rounded-full bg-[image:var(--together)] opacity-70"
+            />
+            <h2 className="font-display text-[23px] font-bold tracking-tight text-tx-hi">
               Pick someone to vibe with
             </h2>
             <p className="max-w-[36ch] text-[13.5px] leading-relaxed text-tx-mid">

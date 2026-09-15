@@ -76,16 +76,31 @@ Accents are named by **role, not colour** — you cannot accidentally use the wr
   --ease: cubic-bezier(.22, 1, .36, 1);
 }
 
-:root[data-theme="light"] {
-  --ink-900: #F1EDFA; --ink-800: #F9F7FD; --ink-700: #FFFFFF;
-  --ink-600: #F1EDFA; --ink-500: #E5E0F0;
-  --tx-hi: #1A1733; --tx-mid: #5F5980; --tx-lo: #918BAC;
-  --you-500: #D62F78;  --you-600: #B02A63;
-  --them-500: #2168E0; --them-600: #1A52B4;
-  --online: #1F9B72;
-  --together: linear-gradient(100deg, #2168E0 0%, #8B3BE0 40%, #D62F78 74%, #E8752F 100%);
-}
 ```
+
+### Single theme, by choice
+
+**v2.1 — the light theme is removed.** It existed as a mechanical inversion of
+the dark tokens and was never designed. In practice it stripped the product's
+entire identity: the system is *two lights in the dark*, and a glow cannot glow
+on white. Users on a light OS were seeing a generic app that shared nothing but
+hex values with the design above.
+
+Committing to one visual world is a legitimate choice where the world is part
+of the product — this one is nocturnal by definition. `color-scheme: dark` is
+declared so browser chrome, form controls and scrollbars follow.
+
+If a light theme returns, it gets designed rather than inverted: different
+surface logic, accents darkened for contrast on a bright ground, and glow
+replaced with something that reads as light rather than as a faded gradient.
+
+### Depth
+
+Three fixed radial washes sit behind everything at `z-index: -1` — azure top
+left, rose top right, violet bottom. They do not scroll, and they are what stop
+the app reading as a flat sheet of colour. Surfaces above them use
+translucency plus `backdrop-blur` rather than opaque fills, so the ambient
+light shows through.
 
 **Spacing scale:** `4 · 8 · 12 · 16 · 20 · 24 · 32 · 40`. Screen gutter is always 16. Use flex/grid `gap`.
 

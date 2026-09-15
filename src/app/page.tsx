@@ -98,7 +98,7 @@ export default async function Home() {
       </section>
 
       <section className="mt-16 grid gap-5 lg:mt-24 lg:grid-cols-2 lg:gap-6">
-        <div className="rounded-[var(--r-lg)] border border-ink-500 bg-ink-700 p-5 sm:p-6">
+        <div className="rounded-[var(--r-lg)] border border-ink-600 bg-ink-800/60 p-5 backdrop-blur-sm sm:p-6">
           <h2 className="font-display mb-2 text-[19px] leading-tight font-bold tracking-tight text-tx-hi sm:text-[21px]">
             Not a messenger with a player bolted on
           </h2>
@@ -111,7 +111,7 @@ export default async function Home() {
           </p>
         </div>
 
-        <div className="rounded-[var(--r-lg)] border border-ink-500 bg-ink-700 p-5 sm:p-6">
+        <div className="rounded-[var(--r-lg)] border border-ink-600 bg-ink-800/60 p-5 backdrop-blur-sm sm:p-6">
           <h2 className="font-display mb-2 text-[19px] leading-tight font-bold tracking-tight text-tx-hi sm:text-[21px]">
             About the music
           </h2>

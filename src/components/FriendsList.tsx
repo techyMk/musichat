@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/Avatar";
 import { ButtonLink } from "@/components/ui/Button";
@@ -9,7 +10,7 @@ export function FriendsList({
   activeId,
 }: {
   friends: Friendship[];
-  /** Highlights the open conversation in the desktop sidebar. */
+  /** Highlights the open conversation in the desktop rail. */
   activeId?: string;
 }) {
   return (
@@ -24,7 +25,9 @@ export function FriendsList({
               className={cn(
                 "flex items-center gap-3 rounded-[var(--r-md)] px-2.5 py-2.5",
                 "transition-colors duration-[var(--dur-fast)]",
-                active ? "bg-ink-700" : "hover:bg-ink-700",
+                active
+                  ? "bg-ink-700 ring-1 ring-ink-500"
+                  : "hover:bg-ink-700/70",
               )}
             >
               <Avatar
@@ -48,18 +51,43 @@ export function FriendsList({
   );
 }
 
+/**
+ * The most important empty state in the app. Nearly every new account sees
+ * this before anything else, so it has to explain the product and route
+ * straight into inviting — not just report that a list is empty.
+ */
 export function FriendsEmptyState({ hasPending }: { hasPending: boolean }) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 py-12 text-center">
-      <h2 className="font-display text-[25px] leading-tight font-bold tracking-tight text-tx-hi">
-        It&apos;s quiet in here
+    <div className="flex flex-1 flex-col items-center justify-center px-6 py-14 text-center">
+      <div className="relative mb-7">
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 -z-10 blur-2xl"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(255,79,151,0.35), transparent 70%)",
+          }}
+        />
+        <Image
+          src="/brand/icon-transparent.png"
+          alt=""
+          width={88}
+          height={88}
+          className="opacity-90"
+        />
+      </div>
+
+      <h2 className="font-display mb-2 text-[26px] leading-tight font-bold tracking-tight text-tx-hi">
+        {hasPending ? "Someone's waiting" : "It's quiet in here"}
       </h2>
-      <p className="max-w-[34ch] text-[13.5px] leading-relaxed text-tx-mid">
+
+      <p className="mb-7 max-w-[34ch] text-[13.5px] leading-relaxed text-balance text-tx-mid">
         {hasPending
-          ? "Someone's waiting to connect with you."
-          : "This app needs two people. Invite the one you'd send a song to at midnight."}
+          ? "A request came in. Accept it and you can start listening together."
+          : "MusiChat needs two people. Invite the one you'd send a song to at midnight — they'll land straight in a chat with you."}
       </p>
-      <div className="mt-3 flex w-full max-w-xs flex-col gap-2.5">
+
+      <div className="flex w-full max-w-xs flex-col gap-2.5">
         <ButtonLink
           href={hasPending ? "/friends/add?tab=requests" : "/friends/add"}
           full

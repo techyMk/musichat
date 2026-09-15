@@ -78,7 +78,7 @@ export default async function InvitePage({
       id="main"
       className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-10 sm:py-14"
     >
-      <div className="sm:rounded-[var(--r-xl)] sm:border sm:border-ink-600 sm:bg-ink-900/40 sm:p-8">
+      <div className="sm:rounded-[var(--r-xl)] sm:border sm:border-ink-600 sm:bg-ink-800/70 sm:p-8 sm:shadow-[0_32px_64px_-40px_rgba(0,0,0,0.9)] sm:backdrop-blur-xl">
         <EmbeddedBrowserNotice />
 
         <div className="flex flex-col items-center text-center">

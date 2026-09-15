@@ -9,15 +9,13 @@ import { Avatar } from "@/components/ui/Avatar";
 /**
  * Chrome for every signed-in screen.
  *
- * Desktop gets a persistent rail — brand, profile, conversations, add-friend —
- * so the app reads as an application rather than a phone column stranded in
- * the middle of a monitor. Below lg the rail is hidden and each route is a
- * full screen with its own back affordance, which is the phone model from
- * UX.md §3.
+ * Desktop is a single elevated window: a persistent rail beside the active
+ * pane. Below lg the rail is hidden and each route is a full screen with its
+ * own back affordance — the phone model from UX.md §3.
  *
  * The rail lives here rather than in a page so it survives navigation without
- * remounting. That matters in M5, when a music session has to keep playing as
- * you move between conversations.
+ * remounting. M5 depends on that: a session has to keep playing while you move
+ * between conversations.
  */
 export default async function AppLayout({
   children,
@@ -39,40 +37,63 @@ export default async function AppLayout({
   const friendships = await loadFriendships(user.id);
   const friends = friendships.filter((f) => f.status === "accepted");
   const pending = friendships.filter((f) => f.status === "pending" && f.incoming);
+  const myName = profile.display_name || profile.username;
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 lg:gap-0 lg:px-6 lg:py-6">
-      <aside className="hidden w-[330px] shrink-0 flex-col lg:flex lg:rounded-l-[var(--r-xl)] lg:border lg:border-ink-600 lg:bg-ink-900/40">
-        <header className="flex items-center gap-3 px-4 py-4">
-          <Link href="/me" aria-label="Your profile">
-            <Avatar
-              name={profile.display_name || profile.username}
-              src={profile.avatar_url}
-              size="md"
-            />
-          </Link>
-          <p className="font-display flex-1 text-[20px] font-bold tracking-tight text-tx-hi">
-            Musi
-            <span className="bg-[image:var(--together)] bg-clip-text text-transparent">
-              Chat
-            </span>
-          </p>
-          <AddFriendButton count={pending.length} />
-        </header>
-
-        <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-4">
-          {friends.length > 0 ? (
-            <FriendsList friends={friends} />
-          ) : (
-            <p className="px-3 py-6 text-[13px] leading-relaxed text-tx-lo">
-              No one here yet. Share your invite code and this fills up.
+    <div className="flex w-full flex-1 lg:justify-center lg:p-6">
+      <div
+        className={[
+          "flex w-full flex-1 overflow-hidden",
+          // The window: one surface, one border, one shadow — rather than
+          // separate panels that read as unrelated boxes.
+          "lg:max-w-6xl lg:rounded-[var(--r-xl)] lg:border lg:border-ink-600",
+          "lg:bg-ink-800/80 lg:shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)] lg:backdrop-blur-xl",
+        ].join(" ")}
+      >
+        <aside className="hidden w-[320px] shrink-0 flex-col border-r border-ink-600 bg-ink-900/50 lg:flex">
+          <header className="flex items-center gap-2.5 px-4 py-4">
+            <p className="font-display flex-1 text-[19px] font-bold tracking-tight text-tx-hi">
+              Musi
+              <span className="bg-[image:var(--together)] bg-clip-text text-transparent">
+                Chat
+              </span>
             </p>
-          )}
-        </div>
-      </aside>
+            <AddFriendButton count={pending.length} />
+          </header>
 
-      <div className="flex min-w-0 flex-1 flex-col lg:rounded-r-[var(--r-xl)] lg:border lg:border-l-0 lg:border-ink-600">
-        {children}
+          <div className="px-4 pb-3">
+            <p className="text-[10px] font-bold tracking-[0.14em] text-tx-lo uppercase">
+              Conversations
+            </p>
+          </div>
+
+          <div className="min-h-0 flex-1 overflow-y-auto px-2">
+            {friends.length > 0 ? (
+              <FriendsList friends={friends} />
+            ) : (
+              <p className="px-3 py-4 text-[12.5px] leading-relaxed text-tx-lo">
+                No one here yet. Share your invite code and this fills up.
+              </p>
+            )}
+          </div>
+
+          <Link
+            href="/me"
+            className="m-2 flex items-center gap-2.5 rounded-[var(--r-md)] px-2.5 py-2.5 transition-colors duration-[var(--dur-fast)] hover:bg-ink-700"
+          >
+            <Avatar name={myName} src={profile.avatar_url} size="md" />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-[13px] font-bold text-tx-hi">
+                {myName}
+              </span>
+              <span className="block truncate text-[11.5px] text-tx-lo">
+                @{profile.username}
+              </span>
+            </span>
+          </Link>
+        </aside>
+
+        <div className="flex min-w-0 flex-1 flex-col">{children}</div>
       </div>
     </div>
   );
