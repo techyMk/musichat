@@ -76,6 +76,34 @@ recover after you turn one device's wifi off and on.
 If this works, everything else is ordinary app-building. If it doesn't, you've learned it in week one
 instead of week twelve. Then delete it — it's a spike, not a foundation.
 
+### Result — PASSED, 15 Sep 2026 (same-network pass)
+
+| Measure | Phone | Laptop |
+|---|---|---|
+| Steady drift | −141 ms | −146 ms |
+| Worst drift | −278 ms | −240 ms |
+| Correction fired | none | none |
+| Latency | 28 ms rtt | 13 ms rtt |
+| **Clock offset** | **−28,916 ms** | −8 ms |
+
+Sequence numbers converged across both devices after every command, in both directions.
+
+**The finding that matters: the test phone's clock was 29 seconds ahead of the server.** Without the
+offset handshake those two devices would have been 29 seconds apart in the song — and it would have
+presented as a sync bug rather than a clock bug. The handshake is not optional and must not be
+simplified away in M5.
+
+Two smaller findings carried into M5:
+
+- Both devices sit ~145 ms *behind* their own expected position — systematic audio startup latency.
+  Because it is near-identical on both, it cancels perceptually and needs no compensation.
+- Drift is measured against a device's *own* state, so two devices can both report green while being on
+  different sessions entirely. **Sequence equality is the real convergence check**, and the production
+  sync status must verify it before ever displaying "In sync".
+
+Still outstanding: the two-network test (phone on mobile data) and the tunnel recovery test, both of
+which need the Vercel deploy in 0.2.
+
 ---
 
 ## 4. M1 — Auth & profile · 2 weeks

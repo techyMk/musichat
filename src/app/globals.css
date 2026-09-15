@@ -1,26 +1,180 @@
 @import "tailwindcss";
 
+/* ============================================================
+   MusiChat design tokens — DESIGN.md §2
+   Dark is the default. Light follows the system, and an explicit
+   data-theme on <html> overrides both.
+   ============================================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink-900: #0c0a1a;
+  --ink-800: #141128;
+  --ink-700: #1d1936;
+  --ink-600: #272247;
+  --ink-500: #352e5c;
+
+  --tx-hi: #f2effb;
+  --tx-mid: #ada5c8;
+  --tx-lo: #756d93;
+
+  /* Rose — always the person holding the phone */
+  --you-300: #ffb0d2;
+  --you-400: #ff83b6;
+  --you-500: #ff4f97;
+  --you-600: #e02b78;
+
+  /* Azure — always the other person */
+  --them-300: #a9ccff;
+  --them-400: #6fa8ff;
+  --them-500: #3b8dff;
+  --them-600: #2168e0;
+
+  /* Gradient terminus only — never standalone, it fails text contrast */
+  --coral-500: #ff8a45;
+
+  --together: linear-gradient(
+    100deg,
+    #3b8dff 0%,
+    #a24dee 40%,
+    #ff4f97 74%,
+    #ff8a45 100%
+  );
+
+  --online: #4fd6a4;
+  --warn: #ffc24b;
+  --danger: #f94545;
+
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  --r-full: 999px;
+
+  --dur-fast: 140ms;
+  --dur-base: 220ms;
+  --dur-slow: 380ms;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --ink-900: #f1edfa;
+    --ink-800: #f9f7fd;
+    --ink-700: #ffffff;
+    --ink-600: #f1edfa;
+    --ink-500: #e5e0f0;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --tx-hi: #1a1733;
+    --tx-mid: #5f5980;
+    --tx-lo: #918bac;
+
+    --you-500: #d62f78;
+    --you-600: #b02a63;
+    --them-500: #2168e0;
+    --them-600: #1a52b4;
+    --online: #1f9b72;
+
+    --together: linear-gradient(
+      100deg,
+      #2168e0 0%,
+      #8b3be0 40%,
+      #d62f78 74%,
+      #e8752f 100%
+    );
   }
 }
 
+:root[data-theme="light"] {
+  --ink-900: #f1edfa;
+  --ink-800: #f9f7fd;
+  --ink-700: #ffffff;
+  --ink-600: #f1edfa;
+  --ink-500: #e5e0f0;
+
+  --tx-hi: #1a1733;
+  --tx-mid: #5f5980;
+  --tx-lo: #918bac;
+
+  --you-500: #d62f78;
+  --you-600: #b02a63;
+  --them-500: #2168e0;
+  --them-600: #1a52b4;
+  --online: #1f9b72;
+
+  --together: linear-gradient(
+    100deg,
+    #2168e0 0%,
+    #8b3be0 40%,
+    #d62f78 74%,
+    #e8752f 100%
+  );
+}
+
+@theme inline {
+  --color-ink-900: var(--ink-900);
+  --color-ink-800: var(--ink-800);
+  --color-ink-700: var(--ink-700);
+  --color-ink-600: var(--ink-600);
+  --color-ink-500: var(--ink-500);
+
+  --color-tx-hi: var(--tx-hi);
+  --color-tx-mid: var(--tx-mid);
+  --color-tx-lo: var(--tx-lo);
+
+  --color-you-300: var(--you-300);
+  --color-you-400: var(--you-400);
+  --color-you-500: var(--you-500);
+  --color-you-600: var(--you-600);
+
+  --color-them-300: var(--them-300);
+  --color-them-400: var(--them-400);
+  --color-them-500: var(--them-500);
+  --color-them-600: var(--them-600);
+
+  --color-online: var(--online);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+
+  --font-sans: var(--font-figtree);
+  --font-display: var(--font-gabarito);
+
+  --ease-brand: var(--ease);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--ink-800);
+  color: var(--tx-hi);
+}
+
+/* Accessibility floor — every interactive element gets a visible focus ring. */
+:focus-visible {
+  outline: none;
+  border-color: var(--you-500);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--you-500) 20%, transparent);
+}
+
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -64px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: var(--r-full);
+  background: var(--ink-700);
+  color: var(--tx-hi);
+  font-weight: 700;
+  transition: top var(--dur-fast) var(--ease);
+}
+.skip-link:focus {
+  top: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
