@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createClient, getUser } from "@/lib/supabase/server";
 import type { FormState } from "@/app/auth/actions";
 import {
@@ -67,6 +68,8 @@ export async function saveProfile(
 
   const displayName = String(formData.get("display_name") ?? "").trim();
   const bio = String(formData.get("bio") ?? "").trim();
+  // Onboarding finishes at the chats list; editing later returns to /me.
+  const next = formData.get("next") === "/me" ? "/me" : "/chats";
   const genres = formData
     .getAll("genres")
     .map(String)
@@ -94,5 +97,6 @@ export async function saveProfile(
     return { error: "Couldn't save your profile. Try again in a moment." };
   }
 
-  redirect("/chats");
+  revalidatePath(next);
+  redirect(next);
 }

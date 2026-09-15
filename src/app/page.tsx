@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
 import { ButtonLink } from "@/components/ui/Button";
+import { PublicFooter } from "@/components/PublicPage";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -64,7 +66,10 @@ export default async function Home() {
           </div>
 
           <p className="mt-4 text-[12px] text-tx-lo">
-            Free. No subscription, on either side.
+            Free. No subscription, on either side.{" "}
+            <Link href="/about" className="underline hover:text-tx-mid">
+              How it works
+            </Link>
           </p>
         </div>
       </section>
@@ -125,9 +130,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <footer className="mt-20 border-t border-ink-600 pt-6 text-center">
-        <p className="text-[12px] text-tx-lo">Built for two people at a time.</p>
-      </footer>
+      <PublicFooter />
     </main>
   );
 }
