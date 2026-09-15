@@ -7,6 +7,9 @@ import { AppNav, LegalLinks } from "@/components/AppNav";
 import { Wordmark } from "@/components/Wordmark";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar } from "@/components/ui/Avatar";
+import { PlayerProvider } from "@/components/player/PlayerProvider";
+import { MiniPlayer } from "@/components/player/MiniPlayer";
+import { FullPlayer } from "@/components/player/FullPlayer";
 
 /**
  * Chrome for every signed-in screen.
@@ -42,16 +45,17 @@ export default async function AppLayout({
   const myName = profile.display_name || profile.username;
 
   return (
-    <div className="flex w-full flex-1 lg:justify-center lg:p-6">
-      <div
-        className={[
-          "flex w-full flex-1 overflow-hidden",
-          // The window: one surface, one border, one shadow — rather than
-          // separate panels that read as unrelated boxes.
-          "lg:max-w-6xl lg:rounded-[var(--r-xl)] lg:border lg:border-ink-600",
-          "lg:bg-ink-800/80 lg:shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)] lg:backdrop-blur-xl",
-        ].join(" ")}
-      >
+    <PlayerProvider>
+      <div className="flex w-full flex-1 lg:justify-center lg:p-6">
+        <div
+          className={[
+            "flex w-full flex-1 overflow-hidden",
+            // The window: one surface, one border, one shadow — rather than
+            // separate panels that read as unrelated boxes.
+            "lg:max-w-6xl lg:rounded-[var(--r-xl)] lg:border lg:border-ink-600",
+            "lg:bg-ink-800/80 lg:shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)] lg:backdrop-blur-xl",
+          ].join(" ")}
+        >
         <aside className="hidden w-[320px] shrink-0 flex-col border-r border-ink-600 bg-ink-900/50 lg:flex">
           <header className="flex items-center gap-2 px-4 py-4">
             <Wordmark href="/dashboard" size="sm" className="flex-1" />
@@ -99,8 +103,13 @@ export default async function AppLayout({
           </div>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col">{children}</div>
+          <div className="flex min-w-0 flex-1 flex-col">{children}</div>
+        </div>
       </div>
-    </div>
+
+      {/* Mounted in the layout, not a page, so audio survives navigation. */}
+      <MiniPlayer />
+      <FullPlayer />
+    </PlayerProvider>
   );
 }

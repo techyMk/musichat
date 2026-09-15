@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   HomeIcon,
   ChatIcon,
+  MusicIcon,
   AddPersonIcon,
   PersonIcon,
   SparkIcon,
@@ -23,6 +24,7 @@ import { cn } from "@/lib/cn";
 const ITEMS = [
   { href: "/dashboard", label: "Dashboard", Icon: HomeIcon },
   { href: "/chats", label: "Chats", Icon: ChatIcon },
+  { href: "/music", label: "Music", Icon: MusicIcon },
   { href: "/friends/add", label: "Add a friend", Icon: AddPersonIcon, badge: true },
   { href: "/me", label: "Your profile", Icon: PersonIcon },
   { href: "/subscription", label: "Subscription", Icon: SparkIcon },

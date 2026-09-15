@@ -28,6 +28,16 @@ export function SparkIcon({ className }: Props) {
   );
 }
 
+export function MusicIcon({ className }: Props) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M7.5 15V5.2l8-1.7V13" />
+      <circle cx="5.6" cy="15" r="1.9" />
+      <circle cx="13.6" cy="13" r="1.9" />
+    </svg>
+  );
+}
+
 export function ChatIcon({ className }: Props) {
   return (
     <svg {...base} className={className}>
