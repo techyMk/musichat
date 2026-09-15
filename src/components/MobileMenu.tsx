@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AppNav, LegalLinks } from "@/components/AppNav";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar } from "@/components/ui/Avatar";
 import { MenuIcon, CloseIcon } from "@/components/icons";
 
@@ -95,8 +96,11 @@ export function MobileMenu({
 
             <AppNav pendingCount={pendingCount} onNavigate={close} />
 
-            <div className="mt-auto border-t border-ink-600 pt-4">
-              <LegalLinks onNavigate={close} />
+            <div className="mt-auto flex items-end gap-2 border-t border-ink-600 pt-4">
+              <div className="flex-1">
+                <LegalLinks onNavigate={close} />
+              </div>
+              <ThemeToggle className="-mb-1" />
             </div>
           </div>
         </div>

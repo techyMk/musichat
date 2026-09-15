@@ -3,13 +3,14 @@
 /* ============================================================
    MusiChat design tokens — DESIGN.md §2
 
-   Single-theme by choice, not omission. The concept is two lights
-   in the dark: glowing accents need a dark ground to glow against,
-   and the product's register is night-time. A light inversion
-   stripped all of that and read as a generic app.
+   Dark is the default and the designed-for case: the system is two
+   lights in the dark. Light is a separate design rather than an
+   inversion — glow is replaced by tint and shadow, because a glow
+   cannot glow on white.
    ============================================================ */
 
-:root {
+:root,
+:root[data-theme="dark"] {
   color-scheme: dark;
 
   --ink-900: #0c0a1a;
@@ -22,19 +23,16 @@
   --tx-mid: #ada5c8;
   --tx-lo: #756d93;
 
-  /* Rose — always the person holding the phone */
   --you-300: #ffb0d2;
   --you-400: #ff83b6;
   --you-500: #ff4f97;
   --you-600: #e02b78;
 
-  /* Azure — always the other person */
   --them-300: #a9ccff;
   --them-400: #6fa8ff;
   --them-500: #3b8dff;
   --them-600: #2168e0;
 
-  /* Gradient terminus only — never standalone, it fails text contrast */
   --coral-500: #ff8a45;
 
   --together: linear-gradient(
@@ -49,6 +47,75 @@
   --warn: #ffc24b;
   --danger: #f94545;
 
+  /* Ambient light behind everything. Strong on dark, where it reads as glow. */
+  --ambient:
+    radial-gradient(58% 42% at 10% -4%, rgba(59, 141, 255, 0.17), transparent 62%),
+    radial-gradient(54% 40% at 92% 4%, rgba(255, 79, 151, 0.15), transparent 62%),
+    radial-gradient(80% 50% at 50% 108%, rgba(162, 77, 238, 0.12), transparent 60%);
+
+  /* Depth. Dark uses shadow; light swaps in a tighter, softer one. */
+  --shadow-panel: 0 40px 80px -40px rgba(0, 0, 0, 0.8);
+  --shadow-card: 0 32px 64px -40px rgba(0, 0, 0, 0.9);
+  --selection: rgba(255, 79, 151, 0.28);
+}
+
+/* ------------------------------------------------------------
+   Light — designed, not inverted.
+
+   Accents darken to hold contrast on a bright ground. Surfaces go
+   opaque white against a tinted page, so cards separate by edge and
+   shadow rather than by luminance. The ambient wash drops to a
+   fraction of its strength: at dark-mode opacity it turns into muddy
+   smears instead of light.
+   ------------------------------------------------------------ */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --ink-900: #efebf8;
+  --ink-800: #f7f4fc;
+  --ink-700: #ffffff;
+  --ink-600: #e4def2;
+  --ink-500: #d3cbe6;
+
+  --tx-hi: #191632;
+  --tx-mid: #5c5580;
+  --tx-lo: #8d86a8;
+
+  --you-300: #b01f60;
+  --you-400: #cc2470;
+  --you-500: #d6246f;
+  --you-600: #a91a56;
+
+  --them-300: #1a4fae;
+  --them-400: #1d59c4;
+  --them-500: #1f5fd0;
+  --them-600: #17499f;
+
+  --coral-500: #cf5f18;
+
+  --together: linear-gradient(
+    100deg,
+    #1f5fd0 0%,
+    #7a34c9 40%,
+    #d6246f 74%,
+    #cf5f18 100%
+  );
+
+  --online: #0f8f63;
+  --warn: #9a6a00;
+  --danger: #c62828;
+
+  --ambient:
+    radial-gradient(58% 42% at 10% -4%, rgba(59, 141, 255, 0.1), transparent 64%),
+    radial-gradient(54% 40% at 92% 4%, rgba(255, 79, 151, 0.09), transparent 64%),
+    radial-gradient(80% 50% at 50% 108%, rgba(162, 77, 238, 0.07), transparent 62%);
+
+  --shadow-panel: 0 24px 60px -32px rgba(38, 24, 72, 0.28);
+  --shadow-card: 0 18px 44px -28px rgba(38, 24, 72, 0.3);
+  --selection: rgba(214, 36, 111, 0.2);
+}
+
+:root {
   --r-sm: 8px;
   --r-md: 14px;
   --r-lg: 20px;
@@ -98,33 +165,15 @@ body {
   color: var(--tx-hi);
 }
 
-/* Ambient depth. Two lights sitting behind everything, fixed so they do not
-   scroll — this is what stops the app reading as a flat sheet of colour. */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background:
-    radial-gradient(
-      58% 42% at 10% -4%,
-      rgba(59, 141, 255, 0.17),
-      transparent 62%
-    ),
-    radial-gradient(
-      54% 40% at 92% 4%,
-      rgba(255, 79, 151, 0.15),
-      transparent 62%
-    ),
-    radial-gradient(
-      80% 50% at 50% 108%,
-      rgba(162, 77, 238, 0.12),
-      transparent 60%
-    );
+  background: var(--ambient);
 }
 
-/* Default scrollbars are visually loud against a dark ground. */
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--ink-500) transparent;
@@ -142,14 +191,9 @@ body::before {
   background-clip: content-box;
   border-radius: var(--r-full);
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--ink-600);
-  border: 3px solid transparent;
-  background-clip: content-box;
-}
 
 ::selection {
-  background: rgba(255, 79, 151, 0.28);
+  background: var(--selection);
 }
 
 /* Accessibility floor — every interactive element gets a visible focus ring. */

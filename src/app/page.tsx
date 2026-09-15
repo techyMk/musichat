@@ -5,6 +5,7 @@ import { getUser } from "@/lib/supabase/server";
 import { ButtonLink } from "@/components/ui/Button";
 import { PublicFooter } from "@/components/PublicPage";
 import { Wordmark } from "@/components/Wordmark";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { SectionHeading, Card, Faq, PlanCard } from "@/components/marketing";
 
 export const metadata: Metadata = {
@@ -119,6 +120,7 @@ export default async function Home() {
             About
           </Link>
         </nav>
+        <ThemeToggle />
         <Link
           href={user ? "/dashboard" : "/login"}
           className="text-[13.5px] font-bold text-tx-hi hover:underline"

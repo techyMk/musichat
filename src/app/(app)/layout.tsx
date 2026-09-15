@@ -5,6 +5,7 @@ import { loadFriendships } from "@/lib/friends";
 import { FriendsList } from "@/components/FriendsList";
 import { AppNav, LegalLinks } from "@/components/AppNav";
 import { Wordmark } from "@/components/Wordmark";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar } from "@/components/ui/Avatar";
 
 /**
@@ -52,8 +53,9 @@ export default async function AppLayout({
         ].join(" ")}
       >
         <aside className="hidden w-[320px] shrink-0 flex-col border-r border-ink-600 bg-ink-900/50 lg:flex">
-          <header className="px-4 py-4">
-            <Wordmark href="/dashboard" size="sm" />
+          <header className="flex items-center gap-2 px-4 py-4">
+            <Wordmark href="/dashboard" size="sm" className="flex-1" />
+            <ThemeToggle />
           </header>
 
           <div className="px-2">

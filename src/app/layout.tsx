@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Gabarito, Figtree } from "next/font/google";
 import { siteUrl } from "@/lib/site";
+import { THEME_SCRIPT } from "@/components/ThemeToggle";
 import "./globals.css";
 
 const gabarito = Gabarito({
@@ -31,8 +32,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#141128",
-  colorScheme: "dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#141128" },
+    { media: "(prefers-color-scheme: light)", color: "#f7f4fc" },
+  ],
   // The app is a full-height layout; letting it zoom-bounce on iOS makes the
   // fixed chrome drift.
   width: "device-width",
@@ -43,8 +46,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${gabarito.variable} ${figtree.variable} h-full antialiased`}
     >
+      <head>
+        {/* Applies the saved theme before first paint. Without it every load
+            flashes dark before switching. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body className="flex min-h-full flex-col font-sans">
         <a href="#main" className="skip-link">
           Skip to content
