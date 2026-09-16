@@ -4,8 +4,10 @@ import { notFound, redirect } from "next/navigation";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { loadFriendships, displayNameOf } from "@/lib/friends";
 import { loadMessages, loadPartnerWatermark } from "@/lib/messages";
+import { SESSION_COLUMNS, toSession } from "@/lib/session";
 import { Avatar } from "@/components/ui/Avatar";
 import { MessageThread } from "@/components/chat/MessageThread";
+import { SessionBar } from "@/components/session/SessionBar";
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -29,10 +31,18 @@ export default async function ConversationPage({
   if (!friendship || friendship.status !== "accepted") notFound();
 
   const supabase = await createClient();
-  const [messages, watermark] = await Promise.all([
+  const [messages, watermark, sessionRow] = await Promise.all([
     loadMessages(supabase, friendshipId),
     loadPartnerWatermark(supabase, friendshipId, user.id),
+    supabase
+      .from("sessions")
+      .select(SESSION_COLUMNS)
+      .eq("friendship_id", friendshipId)
+      .eq("status", "active")
+      .maybeSingle(),
   ]);
+
+  const session = sessionRow.data ? toSession(sessionRow.data as never) : null;
   const name = displayNameOf(friendship.profile);
 
   return (
@@ -53,6 +63,13 @@ export default async function ConversationPage({
           </p>
         </div>
       </header>
+
+      <SessionBar
+        friendshipId={friendshipId}
+        meId={user.id}
+        partnerName={name}
+        initialSession={session}
+      />
 
       <MessageThread
         friendshipId={friendshipId}

@@ -33,12 +33,38 @@ type PlayerState = {
   expanded: boolean;
 };
 
+/**
+ * When a shared session is running it takes over control. The player stops
+ * being the source of truth and becomes a device the session drives: taps go
+ * to the session, and the session tells the audio element where to be.
+ */
+export type PlayerController = {
+  label: string;
+  onPlayTrack: (track: Track) => void;
+  onToggle: () => void;
+  onSeek: (ms: number) => void;
+  onStop: () => void;
+};
+
 type PlayerApi = PlayerState & {
   play: (track: Track) => void;
   toggle: () => void;
   seek: (ms: number) => void;
   stop: () => void;
   setExpanded: (open: boolean) => void;
+  /** Non-null while a session owns playback. */
+  controller: PlayerController | null;
+  setController: (c: PlayerController | null) => void;
+  /** Imperative, for the session: make the audio element match this state. */
+  syncTo: (input: {
+    track: Track | null;
+    shouldPlay: boolean;
+    positionMs: number;
+    hardSeek: boolean;
+  }) => void;
+  /** Raw element position, for drift measurement. */
+  readActualMs: () => number;
+  setPlaybackRate: (rate: number) => void;
 };
 
 const PlayerContext = createContext<PlayerApi | null>(null);
@@ -51,6 +77,7 @@ export function usePlayer() {
 
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [controller, setController] = useState<PlayerController | null>(null);
   const [state, setState] = useState<PlayerState>({
     track: null,
     isPlaying: false,
@@ -123,7 +150,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   /* ---------------- controls ---------------- */
 
-  const play = useCallback(
+  /** Loads and plays without asking the controller — used by the session. */
+  const loadAndPlay = useCallback(
     (track: Track) => {
       const audio = audioRef.current;
       if (!audio) return;
@@ -155,21 +183,21 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     [patch],
   );
 
-  const toggle = useCallback(() => {
+  const localToggle = useCallback(() => {
     const audio = audioRef.current;
     if (!audio || !state.track) return;
     if (audio.paused) void audio.play().catch(() => {});
     else audio.pause();
   }, [state.track]);
 
-  const seek = useCallback((ms: number) => {
+  const localSeek = useCallback((ms: number) => {
     const audio = audioRef.current;
     if (!audio) return;
     audio.currentTime = Math.max(0, ms / 1000);
     setState((s) => ({ ...s, positionMs: ms }));
   }, []);
 
-  const stop = useCallback(() => {
+  const localStop = useCallback(() => {
     const audio = audioRef.current;
     if (audio) {
       audio.pause();
@@ -186,6 +214,97 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       expanded: false,
     });
   }, []);
+
+  /* ---- public controls: routed through the session when one owns us ---- */
+
+  const play = useCallback(
+    (track: Track) =>
+      controller ? controller.onPlayTrack(track) : loadAndPlay(track),
+    [controller, loadAndPlay],
+  );
+
+  const toggle = useCallback(
+    () => (controller ? controller.onToggle() : localToggle()),
+    [controller, localToggle],
+  );
+
+  const seek = useCallback(
+    (ms: number) => (controller ? controller.onSeek(ms) : localSeek(ms)),
+    [controller, localSeek],
+  );
+
+  const stop = useCallback(
+    () => (controller ? controller.onStop() : localStop()),
+    [controller, localStop],
+  );
+
+  /* ---- imperative surface for the session ---- */
+
+  const readActualMs = useCallback(
+    () => (audioRef.current?.currentTime ?? 0) * 1000,
+    [],
+  );
+
+  const setPlaybackRate = useCallback((rate: number) => {
+    if (audioRef.current) audioRef.current.playbackRate = rate;
+  }, []);
+
+  /**
+   * Makes the audio element match the session. Only touches what is actually
+   * wrong: changing src or seeking unnecessarily would restart buffering and
+   * create the very drift this is correcting.
+   */
+  const syncTo = useCallback(
+    ({
+      track,
+      shouldPlay,
+      positionMs,
+      hardSeek,
+    }: {
+      track: Track | null;
+      shouldPlay: boolean;
+      positionMs: number;
+      hardSeek: boolean;
+    }) => {
+      const audio = audioRef.current;
+      if (!audio) return;
+
+      if (!track) {
+        localStop();
+        return;
+      }
+
+      const src = `/api/music/stream/${track.provider}/${encodeURIComponent(
+        track.providerTrackId,
+      )}`;
+
+      if (audio.getAttribute("src") !== src) {
+        patch({
+          track,
+          loading: true,
+          error: null,
+          durationMs: track.durationMs,
+        });
+        audio.src = src;
+        audio.currentTime = Math.max(0, positionMs / 1000);
+      } else if (hardSeek) {
+        audio.currentTime = Math.max(0, positionMs / 1000);
+      }
+
+      if (shouldPlay && audio.paused) {
+        void audio.play().catch(() => {
+          patch({
+            loading: false,
+            error: "Tap play — your browser needs one tap before it will start.",
+          });
+        });
+      } else if (!shouldPlay && !audio.paused) {
+        audio.pause();
+        audio.playbackRate = 1;
+      }
+    },
+    [patch, localStop],
+  );
 
   const setExpanded = useCallback(
     (open: boolean) => patch({ expanded: open }),
@@ -211,8 +330,31 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, [state.track, toggle]);
 
   const value = useMemo<PlayerApi>(
-    () => ({ ...state, play, toggle, seek, stop, setExpanded }),
-    [state, play, toggle, seek, stop, setExpanded],
+    () => ({
+      ...state,
+      play,
+      toggle,
+      seek,
+      stop,
+      setExpanded,
+      controller,
+      setController,
+      syncTo,
+      readActualMs,
+      setPlaybackRate,
+    }),
+    [
+      state,
+      play,
+      toggle,
+      seek,
+      stop,
+      setExpanded,
+      controller,
+      syncTo,
+      readActualMs,
+      setPlaybackRate,
+    ],
   );
 
   return (

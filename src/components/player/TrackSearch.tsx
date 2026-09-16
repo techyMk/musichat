@@ -21,7 +21,14 @@ const SUGGESTIONS = [
 
 type Result = { tracks: Track[]; failed: string[] };
 
-export function TrackSearch() {
+export function TrackSearch({
+  /** When set, results hand the track back instead of playing it locally. */
+  onPick,
+  pickLabel,
+}: {
+  onPick?: (track: Track) => void;
+  pickLabel?: string;
+} = {}) {
   const [query, setQuery] = useState("");
   const [result, setResult] = useState<Result | null>(null);
   const [searching, setSearching] = useState(false);
@@ -139,8 +146,13 @@ export function TrackSearch() {
                   <button
                     type="button"
                     onClick={() =>
-                      active ? player.toggle() : player.play(track)
+                      onPick
+                        ? onPick(track)
+                        : active
+                          ? player.toggle()
+                          : player.play(track)
                     }
+                    aria-label={pickLabel ? `${pickLabel}: ${track.title}` : undefined}
                     className="flex w-full items-center gap-3 rounded-[var(--r-md)] p-2 text-left transition-colors duration-[var(--dur-fast)] hover:bg-ink-700"
                   >
                     <Artwork
