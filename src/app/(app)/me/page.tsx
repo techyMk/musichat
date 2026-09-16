@@ -103,6 +103,28 @@ export default async function ProfilePage() {
           </div>
         </section>
 
+        <section className="mt-10 border-t border-ink-600 pt-6">
+          <h2 className="mb-3 text-[11px] font-bold tracking-[0.14em] text-tx-lo uppercase">
+            Privacy
+          </h2>
+          <Link
+            href="/me/settings"
+            className="flex items-center gap-3 rounded-[var(--r-md)] border border-ink-600 bg-ink-800/60 px-4 py-3.5 hover:bg-ink-700"
+          >
+            <span className="min-w-0 flex-1">
+              <span className="block text-[13.5px] font-bold text-tx-hi">
+                Privacy settings
+              </span>
+              <span className="block text-[12px] text-tx-lo">
+                Online status, vibing status, read receipts, who can add you
+              </span>
+            </span>
+            <span aria-hidden="true" className="text-tx-lo">
+              ›
+            </span>
+          </Link>
+        </section>
+
         <nav className="mt-8 flex justify-center gap-4 text-[12px] text-tx-lo">
           <Link href="/about" className="hover:text-tx-mid">
             About

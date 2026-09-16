@@ -23,6 +23,7 @@ export function Composer({
   meId,
   replyTo,
   editing,
+  onTyping,
   onCancelReply,
   onCancelEdit,
   onSubmitEdit,
@@ -34,6 +35,7 @@ export function Composer({
   meId: string;
   replyTo: ReplyTarget | null;
   editing: Message | null;
+  onTyping: () => void;
   onCancelReply: () => void;
   onCancelEdit: () => void;
   onSubmitEdit: (message: Message, body: string) => void | Promise<void>;
@@ -166,6 +168,7 @@ export function Composer({
           maxLength={MAX_LENGTH}
           onChange={(e) => {
             setValue(e.target.value);
+            if (e.target.value.trim()) onTyping();
             const el = e.target;
             el.style.height = "auto";
             el.style.height = `${Math.min(el.scrollHeight, 140)}px`;

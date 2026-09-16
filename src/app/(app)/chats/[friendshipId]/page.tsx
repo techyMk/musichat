@@ -5,6 +5,8 @@ import { createClient, getUser } from "@/lib/supabase/server";
 import { loadFriendships, displayNameOf } from "@/lib/friends";
 import { loadMessages, loadPartnerWatermark } from "@/lib/messages";
 import { SESSION_COLUMNS, toSession } from "@/lib/session";
+import { loadSettings } from "@/lib/settings";
+import { PresenceLine, PresenceRing } from "@/components/presence/PresenceDot";
 import { Avatar } from "@/components/ui/Avatar";
 import { MessageThread } from "@/components/chat/MessageThread";
 import { SessionBar } from "@/components/session/SessionBar";
@@ -39,7 +41,7 @@ export default async function ConversationPage({
     .maybeSingle();
   const myName = me?.display_name?.trim() || me?.username || "You";
 
-  const [messages, watermark, sessionRow] = await Promise.all([
+  const [messages, watermark, sessionRow, settings] = await Promise.all([
     loadMessages(supabase, friendshipId),
     loadPartnerWatermark(supabase, friendshipId, user.id),
     supabase
@@ -48,6 +50,7 @@ export default async function ConversationPage({
       .eq("friendship_id", friendshipId)
       .eq("status", "active")
       .maybeSingle(),
+    loadSettings(supabase),
   ]);
 
   const session = sessionRow.data ? toSession(sessionRow.data as never) : null;
@@ -63,12 +66,16 @@ export default async function ConversationPage({
         >
           ‹
         </Link>
-        <Avatar name={name} src={friendship.profile.avatar_url} size="md" />
+        <span className="relative shrink-0">
+          <Avatar name={name} src={friendship.profile.avatar_url} size="md" />
+          <PresenceRing userId={friendship.profile.id} />
+        </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-[14.5px] font-bold text-tx-hi">{name}</p>
-          <p className="truncate text-[11.5px] text-tx-lo">
-            @{friendship.profile.username}
-          </p>
+          <PresenceLine
+            userId={friendship.profile.id}
+            fallback={`@${friendship.profile.username}`}
+          />
         </div>
         <SafetyMenu targetId={friendship.profile.id} targetName={name} />
       </header>
@@ -89,6 +96,7 @@ export default async function ConversationPage({
         partnerName={name}
         initialMessages={messages}
         initialWatermark={watermark}
+        readReceipts={settings.readReceipts}
       />
     </div>
   );

@@ -17,6 +17,7 @@ import { Artwork } from "@/components/player/Artwork";
 import { PlayPauseIcon } from "@/components/player/controls";
 import { MessageActions } from "./MessageActions";
 import { Composer, type ReplyTarget } from "./Composer";
+import { useTyping } from "./useTyping";
 import { cn } from "@/lib/cn";
 import type { Track } from "@/lib/music/types";
 
@@ -26,13 +27,17 @@ export function MessageThread({
   partnerName,
   initialMessages,
   initialWatermark,
+  readReceipts,
 }: {
   friendshipId: string;
   meId: string;
   partnerName: string;
   initialMessages: Message[];
   initialWatermark: Watermark | null;
+  /** Reciprocal: turning receipts off also hides theirs (UX.md §10.3). */
+  readReceipts: boolean;
 }) {
+  const { partnerTyping, notifyTyping } = useTyping({ friendshipId, meId });
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [partner, setPartner] = useState<Watermark | null>(initialWatermark);
   const [replyTo, setReplyTo] = useState<ReplyTarget | null>(null);
@@ -51,10 +56,12 @@ export function MessageThread({
       void client.rpc("mark_conversation", {
         target_friendship: friendshipId,
         delivered: true,
-        read,
+        // With receipts off we still record delivery, so unread counts stay
+        // correct — we just never tell the other side we read it.
+        read: read && readReceipts,
       });
     },
-    [client, friendshipId],
+    [client, friendshipId, readReceipts],
   );
 
   /* ---------------- realtime ---------------- */
@@ -201,7 +208,9 @@ export function MessageThread({
                     repliedTo={
                       message.replyToId ? byId.get(message.replyToId) : undefined
                     }
-                    receipt={mine ? receiptFor(message, partner) : null}
+                    receipt={
+                      mine && readReceipts ? receiptFor(message, partner) : null
+                    }
                     onReply={() =>
                       setReplyTo({
                         id: message.id,
@@ -220,12 +229,30 @@ export function MessageThread({
             })}
           </ol>
         )}
+        {partnerTyping && (
+          <div className="mt-2 flex items-center gap-2 self-start px-1">
+            <span className="flex gap-1" aria-hidden="true">
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  className="h-1.5 w-1.5 rounded-full bg-them-400 motion-safe:animate-bounce"
+                  style={{ animationDelay: `${i * 140}ms` }}
+                />
+              ))}
+            </span>
+            <span className="text-[11.5px] text-tx-lo">
+              {partnerName} is typing
+            </span>
+          </div>
+        )}
+
         <div ref={bottomRef} />
       </div>
 
       <Composer
         friendshipId={friendshipId}
         meId={meId}
+        onTyping={notifyTyping}
         replyTo={replyTo}
         editing={editing}
         onCancelReply={() => setReplyTo(null)}

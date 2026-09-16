@@ -13,6 +13,8 @@ import { PlayerProvider } from "@/components/player/PlayerProvider";
 import { MiniPlayer } from "@/components/player/MiniPlayer";
 import { FullPlayer } from "@/components/player/FullPlayer";
 import { SessionPresenceProvider } from "@/components/session/SessionContext";
+import { PresenceProvider } from "@/components/presence/PresenceProvider";
+import { loadSettings } from "@/lib/settings";
 
 /**
  * Chrome for every signed-in screen.
@@ -42,15 +44,17 @@ export default async function AppLayout({
 
   if (!profile) redirect("/onboarding/username");
 
-  const [friendships, conversations] = await Promise.all([
+  const [friendships, conversations, settings] = await Promise.all([
     loadFriendships(user.id),
     loadConversations(supabase),
+    loadSettings(supabase),
   ]);
   const friends = friendships.filter((f) => f.status === "accepted");
   const pending = friendships.filter((f) => f.status === "pending" && f.incoming);
   const myName = profile.display_name || profile.username;
 
   return (
+    <PresenceProvider meId={user.id} enabled={settings.showPresence}>
     <SessionPresenceProvider>
     <PlayerProvider>
       <div className="flex w-full flex-1 lg:justify-center lg:p-6">
@@ -137,5 +141,6 @@ export default async function AppLayout({
       />
     </PlayerProvider>
     </SessionPresenceProvider>
+    </PresenceProvider>
   );
 }
