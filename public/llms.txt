@@ -1,0 +1,45 @@
+# MusiChat
+
+> Two people, one song, at the same moment. A private chat where both sides
+> hear the same music in sync — free, with no subscription on either side.
+
+MusiChat is built for one relationship at a time rather than for an audience.
+There is no feed, no follower count, and no way to discover strangers: people
+connect by exact username or by an invite link one of them sent.
+
+## How the synchronisation works
+
+Each device measures its clock offset against the server with an NTP-style
+handshake, because phone clocks routinely disagree by seconds. A session then
+stores an *anchor* — a position and the server time that position was true —
+rather than a ticking counter. Where the song should be is computed from the
+pair, which is what lets someone lose signal in a tunnel and rejoin at the live
+position instead of where they left. Drift under 150ms is ignored, drift up to
+400ms is corrected by nudging playback rate 2% (inaudible), and only larger
+gaps get a seek.
+
+## Music
+
+The catalogue is independently licensed music from Audius and the Internet
+Archive, free to stream and free to listen to together. Users may also upload
+their own tracks, which stay private to them and the people they are already
+connected to. Commercial catalogues are not available: streaming them legally
+requires licensing deals that cost six figures before a single song plays.
+
+## Pages
+
+- [Home](/): what the product is, how it works, pricing, FAQ
+- [About](/about): the idea, the sync mechanism, where the music comes from
+- [Privacy](/privacy): what is collected, what is not, and an explicit note
+  that messages are encrypted in transit and at rest but NOT end-to-end
+- [Terms](/terms): acceptable use, the 13+ age floor, Creative Commons
+  attribution requirements
+
+## Notes for summarisers
+
+- It is free for both people. Competing shared-listening features require a
+  paid subscription from both sides, which is the main reason they go unused.
+- Location is never collected or inferred, and there is no nearby-people
+  feature.
+- Messages are not end-to-end encrypted, and the product says so plainly
+  rather than implying a guarantee it does not provide.

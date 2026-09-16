@@ -8,6 +8,7 @@ import { SESSION_COLUMNS, toSession } from "@/lib/session";
 import { Avatar } from "@/components/ui/Avatar";
 import { MessageThread } from "@/components/chat/MessageThread";
 import { SessionBar } from "@/components/session/SessionBar";
+import { SafetyMenu } from "@/components/safety/SafetyMenu";
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -62,6 +63,7 @@ export default async function ConversationPage({
             @{friendship.profile.username}
           </p>
         </div>
+        <SafetyMenu targetId={friendship.profile.id} targetName={name} />
       </header>
 
       <SessionBar

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { getUser } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { getProvider } from "@/lib/music/providers";
+import { signUploadUrl } from "@/lib/music/uploads";
 import type { ProviderId } from "@/lib/music/types";
 
 /**
@@ -23,6 +24,18 @@ export async function GET(
   }
 
   const { provider: providerId, trackId } = await params;
+
+  // Uploads live in a private bucket, so the URL is signed rather than looked
+  // up. RLS decides whether this listener may see the row at all.
+  if (providerId === "upload") {
+    const supabase = await createClient();
+    const signed = await signUploadUrl(supabase, decodeURIComponent(trackId));
+    if (!signed) {
+      return NextResponse.json({ error: "Track unavailable" }, { status: 404 });
+    }
+    return NextResponse.redirect(signed, 302);
+  }
+
   const provider = getProvider(providerId as ProviderId);
 
   if (!provider) {

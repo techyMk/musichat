@@ -6,6 +6,11 @@ import { signOut } from "@/app/auth/actions";
 import { ProfileForm } from "@/app/onboarding/profile/ProfileForm";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/Button";
+import {
+  BlockedList,
+  DeleteAccount,
+  type BlockedUser,
+} from "@/components/safety/DangerZone";
 
 export const metadata: Metadata = {
   title: "Your profile",
@@ -24,6 +29,9 @@ export default async function ProfilePage() {
     .maybeSingle();
 
   if (!profile) redirect("/onboarding/username");
+
+  const { data: blockedRows } = await supabase.rpc("my_blocks");
+  const blocked = (blockedRows ?? []) as BlockedUser[];
 
   const joined = new Date(profile.created_at).toLocaleDateString("en-GB", {
     month: "long",
@@ -62,12 +70,18 @@ export default async function ProfilePage() {
 
         <section className="mt-10 border-t border-ink-600 pt-6">
           <h2 className="mb-3 text-[11px] font-bold tracking-[0.14em] text-tx-lo uppercase">
+            Blocked
+          </h2>
+          <BlockedList blocked={blocked} />
+        </section>
+
+        <section className="mt-10 border-t border-ink-600 pt-6">
+          <h2 className="mb-3 text-[11px] font-bold tracking-[0.14em] text-tx-lo uppercase">
             Account
           </h2>
 
           <p className="mb-4 text-[12.5px] leading-relaxed text-tx-mid">
-            Signed in as {user.email}. Privacy controls, blocking and account
-            deletion arrive with the safety milestone.
+            Signed in as {user.email}.
           </p>
 
           <div className="flex flex-col gap-1.5">
@@ -82,6 +96,10 @@ export default async function ProfilePage() {
                 Sign out on all devices
               </Button>
             </form>
+          </div>
+
+          <div className="mt-6">
+            <DeleteAccount />
           </div>
         </section>
 

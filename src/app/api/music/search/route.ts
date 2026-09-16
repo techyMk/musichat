@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { getUser } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { searchAll } from "@/lib/music/providers";
+import { searchUploads } from "@/lib/music/uploads";
 
 /**
  * Search proxy.
@@ -21,10 +22,20 @@ export async function GET(request: Request) {
   }
 
   try {
-    const result = await searchAll(query, 10);
-    return NextResponse.json(result, {
-      headers: { "Cache-Control": "private, max-age=120" },
-    });
+    const supabase = await createClient();
+
+    // Uploads cannot go through the stateless provider list — every result
+    // depends on who is asking — so they are merged here, and placed first
+    // because a track you deliberately added is what you most likely meant.
+    const [uploads, catalogue] = await Promise.all([
+      searchUploads(supabase, query, 5).catch(() => []),
+      searchAll(query, 10),
+    ]);
+
+    return NextResponse.json(
+      { tracks: [...uploads, ...catalogue.tracks], failed: catalogue.failed },
+      { headers: { "Cache-Control": "private, max-age=120" } },
+    );
   } catch {
     return NextResponse.json(
       { error: "Search didn't work. Try again." },
