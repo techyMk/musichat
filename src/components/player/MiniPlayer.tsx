@@ -13,16 +13,27 @@ import { PlayPauseIcon } from "./controls";
  * relationship are the same object.
  */
 export function MiniPlayer() {
-  const { track, isPlaying, positionMs, durationMs, loading, toggle, setExpanded } =
-    usePlayer();
+  const {
+    track,
+    isPlaying,
+    positionMs,
+    durationMs,
+    loading,
+    toggle,
+    setExpanded,
+    controller,
+  } = usePlayer();
 
   if (!track) return null;
 
   const pct = durationMs > 0 ? Math.min(100, (positionMs / durationMs) * 100) : 0;
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-2.5 pb-2.5 lg:px-6 lg:pb-6">
-      <div className="pointer-events-auto relative w-full max-w-6xl overflow-hidden rounded-[18px] border border-ink-500 bg-ink-700/95 shadow-[0_10px_26px_-12px_rgba(0,0,0,0.75)] backdrop-blur-xl">
+    /* Reserves its own height in the document rather than floating over the
+       page. Fixed positioning was covering the message composer — a player you
+       cannot dismiss must not sit on top of the thing you type into. */
+    <div className="sticky bottom-0 z-40 shrink-0 px-2.5 pb-2.5 lg:px-6 lg:pb-6">
+      <div className="relative mx-auto w-full max-w-6xl overflow-hidden rounded-[18px] border border-ink-500 bg-ink-700/95 shadow-[0_10px_26px_-12px_rgba(0,0,0,0.75)] backdrop-blur-xl">
         <div
           aria-hidden="true"
           className="absolute inset-x-0 top-0 h-[2px] bg-ink-600"
@@ -47,6 +58,13 @@ export function MiniPlayer() {
               rounded="rounded-[10px]"
             />
             <span className="min-w-0 flex-1">
+              {/* Names the person you are listening WITH, never the chat you
+                  happen to be looking at (DESIGN.md §5.3). */}
+              {controller && (
+                <span className="block truncate bg-[image:var(--together)] bg-clip-text text-[10px] font-bold tracking-[0.05em] text-transparent">
+                  {controller.label}
+                </span>
+              )}
               <span className="block truncate text-[12.5px] font-bold text-tx-hi">
                 {track.title}
               </span>

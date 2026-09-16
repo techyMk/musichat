@@ -15,8 +15,6 @@ import type { TrackRef } from "@/lib/messages";
 
 const DRIFT_TICK_MS = 500;
 const RECLOCK_MS = 60_000;
-/** No server contact for this long and we stop claiming to be in sync. */
-const STALE_MS = 10_000;
 
 export type SyncStatus = SyncQuality | "connecting" | "reconnecting";
 
@@ -76,13 +74,15 @@ export function useSession({
 
   const sessionRef = useRef(session);
   const clockRef = useRef(clock);
-  // 0 until the first effect runs. Date.now() in a ref initialiser is an
-  // impure call during render.
-  const lastContactRef = useRef(0);
-
-  useEffect(() => {
-    lastContactRef.current = Date.now();
-  }, []);
+  /**
+   * Connection health, from the channel itself.
+   *
+   * An earlier version inferred this from "no events for 10 seconds", which
+   * was wrong: a session where nobody touches anything is silent by design, so
+   * a perfectly healthy session reported Reconnecting in red after ten
+   * seconds. Only the transport knows whether it is connected.
+   */
+  const connectedRef = useRef(false);
 
   useEffect(() => {
     sessionRef.current = session;
@@ -130,7 +130,6 @@ export function useSession({
           filter: `friendship_id=eq.${friendshipId}`,
         },
         (payload) => {
-          lastContactRef.current = Date.now();
           const incoming = toSession(payload.new as never);
 
           // Higher seq always wins; older state is discarded silently rather
@@ -144,9 +143,10 @@ export function useSession({
       )
       .subscribe((s) => {
         if (s === "SUBSCRIBED") {
-          lastContactRef.current = Date.now();
+          connectedRef.current = true;
           setStatus("catching-up");
-        } else if (s === "CHANNEL_ERROR" || s === "TIMED_OUT") {
+        } else if (s === "CHANNEL_ERROR" || s === "TIMED_OUT" || s === "CLOSED") {
+          connectedRef.current = false;
           setStatus("reconnecting");
         }
       });
@@ -171,10 +171,7 @@ export function useSession({
           track: opts.track ? toRef(opts.track) : null,
           seek_to_ms: opts.seekToMs ?? null,
         });
-        if (!error && data) {
-          lastContactRef.current = Date.now();
-          setSession(toSession(data as never));
-        }
+        if (!error && data) setSession(toSession(data as never));
       } finally {
         setBusy(false);
       }
@@ -229,11 +226,18 @@ export function useSession({
     const id = setInterval(() => {
       const current = sessionRef.current;
 
-      if (Date.now() - lastContactRef.current > STALE_MS) {
+      if (!connectedRef.current) {
         setStatus("reconnecting");
+        return;
       }
 
-      if (!current || current.status !== "active" || !current.isPlaying) return;
+      if (!current || current.status !== "active") return;
+
+      // Paused is a legitimate resting state, not a sync problem.
+      if (!current.isPlaying) {
+        setStatus("synced");
+        return;
+      }
       if (!clockRef.current) return;
 
       const expected = expectedPosition(current, serverNow());
@@ -254,9 +258,7 @@ export function useSession({
       }
 
       // Never claim sync before it has been measured true (DESIGN.md §5.5).
-      if (Date.now() - lastContactRef.current <= STALE_MS) {
-        setStatus(Math.abs(d) > DRIFT.lost ? "reconnecting" : classifyDrift(d));
-      }
+      setStatus(Math.abs(d) > DRIFT.lost ? "reconnecting" : classifyDrift(d));
     }, DRIFT_TICK_MS);
 
     return () => clearInterval(id);
@@ -270,6 +272,14 @@ export function useSession({
     drift,
     clock,
     status,
+    /**
+     * True once the other person has touched the session. Until they do, this
+     * is a solo listen they can drop into — a normal state, not an error
+     * (PRD assumption A1).
+     */
+    partnerPresent: Boolean(
+      session && session.lastActionBy && session.lastActionBy !== meId,
+    ),
     isMine: session?.lastActionBy === meId,
     start: (track: Track) => command("start", { track }),
     end: () => command("end"),

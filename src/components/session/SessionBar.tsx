@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "./useSession";
+import { useSessionPresence } from "./SessionContext";
 import { describeAction, type ListeningSession } from "@/lib/session";
 import { usePlayer } from "@/components/player/PlayerProvider";
 import { Artwork } from "@/components/player/Artwork";
@@ -20,16 +21,55 @@ export function SessionBar({
   friendshipId,
   meId,
   partnerName,
+  partnerAvatarUrl,
+  myName,
+  myAvatarUrl,
   initialSession,
 }: {
   friendshipId: string;
   meId: string;
   partnerName: string;
+  partnerAvatarUrl: string | null;
+  myName: string;
+  myAvatarUrl: string | null;
   initialSession: ListeningSession | null;
 }) {
   const s = useSession({ friendshipId, meId, partnerName, initialSession });
   const player = usePlayer();
+  const { setPresence } = useSessionPresence();
   const [picking, setPicking] = useState(false);
+
+  // The player is mounted in the app layout so it survives navigation, which
+  // means it cannot receive this by props. Published here instead.
+  useEffect(() => {
+    if (!s.active) {
+      setPresence(null);
+      return;
+    }
+    setPresence({
+      partnerName,
+      partnerAvatarUrl,
+      myName,
+      myAvatarUrl,
+      status: s.status,
+      driftMs: s.drift,
+      alone: !s.partnerPresent,
+    });
+    return () => setPresence(null);
+  }, [
+    s.active,
+    s.status,
+    s.drift,
+    s.session?.lastActionBy,
+    s.session?.startedBy,
+    s.partnerPresent,
+    partnerName,
+    partnerAvatarUrl,
+    myName,
+    myAvatarUrl,
+    meId,
+    setPresence,
+  ]);
 
   const attribution = s.session
     ? describeAction(s.session, meId, partnerName)

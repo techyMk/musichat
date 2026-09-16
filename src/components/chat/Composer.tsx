@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toMessage, MESSAGE_COLUMNS, type Message } from "@/lib/messages";
+import { EmojiPicker } from "./EmojiPicker";
 import { cn } from "@/lib/cn";
 
 const MAX_LENGTH = 4000;
@@ -151,7 +152,13 @@ export function Composer({
         </p>
       )}
 
-      <div className="flex items-end gap-2">
+      <div className="flex items-end gap-1.5">
+        <EmojiPicker
+          onPick={(emoji) => {
+            setValue((v) => v + emoji);
+            inputRef.current?.focus();
+          }}
+        />
         <textarea
           ref={inputRef}
           rows={1}

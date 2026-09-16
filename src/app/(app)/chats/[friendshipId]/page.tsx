@@ -32,6 +32,13 @@ export default async function ConversationPage({
   if (!friendship || friendship.status !== "accepted") notFound();
 
   const supabase = await createClient();
+  const { data: me } = await supabase
+    .from("profiles")
+    .select("username, display_name, avatar_url")
+    .eq("id", user.id)
+    .maybeSingle();
+  const myName = me?.display_name?.trim() || me?.username || "You";
+
   const [messages, watermark, sessionRow] = await Promise.all([
     loadMessages(supabase, friendshipId),
     loadPartnerWatermark(supabase, friendshipId, user.id),
@@ -70,6 +77,9 @@ export default async function ConversationPage({
         friendshipId={friendshipId}
         meId={user.id}
         partnerName={name}
+        partnerAvatarUrl={friendship.profile.avatar_url}
+        myName={myName}
+        myAvatarUrl={me?.avatar_url ?? null}
         initialSession={session}
       />
 
@@ -80,9 +90,6 @@ export default async function ConversationPage({
         initialMessages={messages}
         initialWatermark={watermark}
       />
-
-      {/* The mini player docks over the bottom edge when something is playing. */}
-      <div aria-hidden="true" className="h-16 shrink-0" />
     </div>
   );
 }

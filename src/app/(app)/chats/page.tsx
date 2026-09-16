@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { loadFriendships } from "@/lib/friends";
-import { FriendsList, FriendsEmptyState } from "@/components/FriendsList";
+import { loadConversations } from "@/lib/conversations";
+import { ConversationList } from "@/components/ConversationList";
+import { FriendsEmptyState } from "@/components/FriendsList";
 import { AddFriendButton } from "@/components/AddFriendButton";
 import { MobileMenu } from "@/components/MobileMenu";
 import { Wordmark } from "@/components/Wordmark";
@@ -26,7 +28,10 @@ export default async function ChatsPage() {
 
   if (!profile) redirect("/onboarding/username");
 
-  const friendships = await loadFriendships(user.id);
+  const [friendships, conversations] = await Promise.all([
+    loadFriendships(user.id),
+    loadConversations(supabase),
+  ]);
   const friends = friendships.filter((f) => f.status === "accepted");
   const pending = friendships.filter((f) => f.status === "pending" && f.incoming);
 
@@ -45,9 +50,9 @@ export default async function ChatsPage() {
         <AddFriendButton count={pending.length} />
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col px-3 pb-5 lg:hidden">
-        {friends.length > 0 ? (
-          <FriendsList friends={friends} />
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 pb-24 lg:hidden">
+        {conversations.length > 0 ? (
+          <ConversationList conversations={conversations} meId={user.id} />
         ) : (
           <FriendsEmptyState hasPending={pending.length > 0} />
         )}

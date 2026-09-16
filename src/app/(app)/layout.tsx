@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { loadFriendships, displayNameOf } from "@/lib/friends";
 import { MessageToasts } from "@/components/chat/MessageToasts";
-import { FriendsList } from "@/components/FriendsList";
+import { loadConversations } from "@/lib/conversations";
+import { ConversationList } from "@/components/ConversationList";
 import { AppNav, LegalLinks } from "@/components/AppNav";
 import { Wordmark } from "@/components/Wordmark";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -11,6 +12,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { PlayerProvider } from "@/components/player/PlayerProvider";
 import { MiniPlayer } from "@/components/player/MiniPlayer";
 import { FullPlayer } from "@/components/player/FullPlayer";
+import { SessionPresenceProvider } from "@/components/session/SessionContext";
 
 /**
  * Chrome for every signed-in screen.
@@ -40,12 +42,16 @@ export default async function AppLayout({
 
   if (!profile) redirect("/onboarding/username");
 
-  const friendships = await loadFriendships(user.id);
+  const [friendships, conversations] = await Promise.all([
+    loadFriendships(user.id),
+    loadConversations(supabase),
+  ]);
   const friends = friendships.filter((f) => f.status === "accepted");
   const pending = friendships.filter((f) => f.status === "pending" && f.incoming);
   const myName = profile.display_name || profile.username;
 
   return (
+    <SessionPresenceProvider>
     <PlayerProvider>
       <div className="flex w-full flex-1 lg:justify-center lg:p-6">
         <div
@@ -74,8 +80,12 @@ export default async function AppLayout({
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto px-2">
-            {friends.length > 0 ? (
-              <FriendsList friends={friends} />
+            {conversations.length > 0 ? (
+              <ConversationList
+                conversations={conversations}
+                meId={user.id}
+                compact
+              />
             ) : (
               <p className="px-3 py-3 text-[12.5px] leading-relaxed text-tx-lo">
                 No one here yet. Share your invite code and this fills up.
@@ -104,12 +114,16 @@ export default async function AppLayout({
           </div>
         </aside>
 
-          <div className="flex min-w-0 flex-1 flex-col">{children}</div>
+          <div className="flex min-w-0 flex-1 flex-col">
+            {children}
+            {/* Mounted in the layout, not a page, so audio survives
+                navigation — and inside the content column so it sits beneath
+                the composer instead of on top of it. */}
+            <MiniPlayer />
+          </div>
         </div>
       </div>
 
-      {/* Mounted in the layout, not a page, so audio survives navigation. */}
-      <MiniPlayer />
       <FullPlayer />
 
       <MessageToasts
@@ -122,5 +136,6 @@ export default async function AppLayout({
         }))}
       />
     </PlayerProvider>
+    </SessionPresenceProvider>
   );
 }

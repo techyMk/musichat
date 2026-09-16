@@ -5,6 +5,9 @@ import { usePlayer } from "./PlayerProvider";
 import { Artwork } from "./Artwork";
 import { PlayPauseIcon, SkipIcon, ChevronDownIcon } from "./controls";
 import { formatDuration } from "@/lib/music/types";
+import { Avatar } from "@/components/ui/Avatar";
+import { StatusPill } from "@/components/ui/StatusPill";
+import { useSessionPresence } from "@/components/session/SessionContext";
 
 const SKIP_MS = 10_000;
 
@@ -33,6 +36,7 @@ export function FullPlayer() {
     stop,
     setExpanded,
   } = usePlayer();
+  const { presence } = useSessionPresence();
 
   useEffect(() => {
     if (!expanded) return;
@@ -77,8 +81,20 @@ export function FullPlayer() {
           >
             <ChevronDownIcon />
           </button>
-          <p className="flex-1 text-center text-[10px] font-bold tracking-[0.18em] text-tx-lo uppercase">
-            Listening alone
+          {/* The gradient is reserved for a live shared session — solo stays
+              plain, so the state is readable by colour alone. */}
+          <p
+            className={
+              presence && !presence.alone
+                ? "flex-1 bg-[image:var(--together)] bg-clip-text text-center text-[10px] font-bold tracking-[0.18em] text-transparent uppercase"
+                : "flex-1 text-center text-[10px] font-bold tracking-[0.18em] text-tx-lo uppercase"
+            }
+          >
+            {!presence
+              ? "Listening alone"
+              : presence.alone
+                ? `Waiting for ${presence.partnerName}`
+                : "Now vibing together"}
           </p>
           <div className="h-10 w-10" />
         </div>
@@ -153,6 +169,64 @@ export function FullPlayer() {
           )}
         </div>
 
+        {/* Who you're with. Two avatars joined by the gradient thread — solid
+            when synced, broken when they've dropped or haven't joined. */}
+        {presence && (
+          <div className="mt-7 flex flex-col items-center gap-2.5">
+            <div className="flex items-center">
+              <Avatar
+                name={presence.partnerName}
+                src={presence.partnerAvatarUrl}
+                size="sm"
+                className={presence.alone ? "opacity-30" : undefined}
+              />
+              <span
+                aria-hidden="true"
+                className={`-mx-1.5 h-0.5 w-11 ${
+                  presence.alone || presence.status === "reconnecting"
+                    ? "bg-[repeating-linear-gradient(90deg,var(--tx-lo)_0_3px,transparent_3px_7px)]"
+                    : "bg-[image:var(--together)]"
+                }`}
+              />
+              <Avatar
+                name={presence.myName}
+                src={presence.myAvatarUrl}
+                size="sm"
+              />
+            </div>
+
+            <p className="text-[12px] text-tx-mid">
+              {presence.alone ? (
+                `${presence.partnerName} will join when they're around`
+              ) : (
+                <>
+                  <span className="font-bold text-tx-hi">
+                    You + {presence.partnerName}
+                  </span>
+                </>
+              )}
+            </p>
+
+            <StatusPill
+              tone={
+                presence.status === "synced"
+                  ? "synced"
+                  : presence.status === "reconnecting"
+                    ? "lost"
+                    : "pending"
+              }
+            >
+              {presence.status === "synced"
+                ? "In sync"
+                : presence.status === "catching-up"
+                  ? "Catching up"
+                  : presence.status === "reconnecting"
+                    ? `${presence.partnerName} is reconnecting`
+                    : "Connecting"}
+            </StatusPill>
+          </div>
+        )}
+
         <div className="mt-6 flex flex-col items-center gap-3">
           {/* Creative Commons requires credit, so this is functional, not
               decorative (PRD §8.4). */}
@@ -180,7 +254,7 @@ export function FullPlayer() {
             onClick={stop}
             className="text-[12.5px] font-semibold text-tx-lo hover:text-tx-mid"
           >
-            Stop playing
+            {presence ? "End the session" : "Stop playing"}
           </button>
         </div>
       </div>
